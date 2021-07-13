@@ -10,7 +10,7 @@ const sequelize = new Sequelize({
 
     password: 'DB_PASS',
 
-    database: 'groupomania',
+    database: 'groupomania_development',
 
     dialect: "mysql"
 

@@ -1,4 +1,6 @@
 'use strict';
+
+// ----------  LIKES TABLE CREATED via SEQUELIZE ----------  //
 module.exports = {
     up: async(queryInterface, Sequelize) => {
         await queryInterface.createTable('Likes', {

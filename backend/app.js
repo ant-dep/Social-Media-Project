@@ -8,8 +8,9 @@ const rateLimit = require("express-rate-limit");
 
 // routes
 const postsRoutes = require("./routes/posts");
-const userRoutes = require("./routes/user");
+const usersRoutes = require("./routes/users");
 const commentsRoutes = require("./routes/comments");
+const likesRoutes = require("./routes/likes")
 
 require('dotenv').config(); // private code plugin
 const cors = require('cors'); // API calls plugin
@@ -30,8 +31,9 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use(cors());
 app.use('/api/auth/post', postsRoutes);
-app.use('/api/auth', userRoutes);
+app.use('/api/auth', usersRoutes);
 app.use('/api/auth', commentsRoutes);
+app.use('/api/auth', likesRoutes);
 
 // Input sanitization against XXS attacks
 app.use(xss());
