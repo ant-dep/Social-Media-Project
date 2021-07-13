@@ -1,11 +1,16 @@
 const bcrypt = require("bcrypt");
 const db = require("../models/index");
 const MaskData = require("maskdata");
-const jwtUtils = require("../utils/jwt.utils");
 const User = db.user;
 
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
+// hide emails details for confidentiality
+const emailMaskOptions = {
+    maskWith: "*",
+    unmaskedStartCharactersBeforeAt: 1,
+    unmaskedEndCharactersAfterAt: 1,
+    maskAtTheRate: false,
+};
 // ----------  CRUD MODEL  ----------  //
 
 // ----------  SIGN UP  (CREATE) ----------  //
@@ -14,28 +19,30 @@ exports.signup = async(req, res, next) => {
     // Checking if any of inputs are blanks
     if (req.body.pseudo == null || req.body.email == null || req.body.password == null) {
         return res.status(400).json({ 'error': 'Merci de renseigner tous les champs !' });
+        console.log('Champs complétés')
     }
     // Checking required pseudo length
-    if (pseudo.length >= 13 || pseudo.length <= 4) {
+    if (req.body.pseudo.length >= 13 || req.body.pseudo.length <= 4) {
         return res.status(400).json({ 'error': 'wrong username (must be length 5 - 12)' });
     }
     // Checking required email format
-    if (!EMAIL_REGEX.test(email)) {
+    if (!EMAIL_REGEX.test(req.body.email)) {
         return res.status(400).json({ 'error': 'email is not valid' });
     }
-    // Hash the password
-    bcrypt.hash(req.body.password, 10)
+    // encrypt the password given by the user with 12 loops of encrypting (default recommended)
+    bcrypt.hash(req.body.password, 12)
         .then(hash => {
-            // define a user model to save
-            const user = {
+            // Use the model to create a new User
+            const user = new User({
+                email: maskData.maskEmail2(req.body.email, emailMaskOptions),
                 pseudo: req.body.pseudo,
-                email: MaskData.maskEmail2(req.body.email),
                 password: hash,
                 isAdmin: 0
-            };
-            // save it
-            User.create(user)
-                .then(user => res.status(201).json(user))
+            });
+            // save the new User
+            user.save()
+                .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
+                .catch(error => res.status(400).json({ error }));
         })
         .catch(error => res.status(500).json({ error }));
 }
