@@ -29,6 +29,7 @@ db.Sequelize = Sequelize;
 db.user = require("./User")(sequelize, Sequelize)
 db.post = require("./Post")(sequelize, Sequelize)
 db.comment = require("./Comment")(sequelize, Sequelize)
+db.like = require("./Like")(sequelize, Sequelize)
 
 // POSTS
 db.user.hasMany(db.post);

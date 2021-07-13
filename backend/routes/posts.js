@@ -4,7 +4,7 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const multer = require('../middleware/multer-config');
 
-const postsCtrl = require('../controllers/post');
+const postsCtrl = require('../controllers/postsCtrl');
 
 // ----------  POSTS ROUTES  ----------  //
 router.post('/', auth, multer, postsCtrl.createPost);

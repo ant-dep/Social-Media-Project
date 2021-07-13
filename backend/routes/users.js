@@ -1,7 +1,7 @@
 // Import
 const express = require('express');
 const router = express.Router();
-const userCtrl = require('../controllers/user');
+const userCtrl = require('../controllers/usersCtrl');
 const passValidate = require('../middleware/passValidate');
 const mailValidate = require('../middleware/mailValidate');
 const rateLimit = require("express-rate-limit");
