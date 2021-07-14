@@ -36,6 +36,7 @@
         "nodemon": "^2.0.12",
         "password-validator": "^5.1.1",
         "sequelize": "^6.6.5",
+        "update": "^0.7.4",
         "vue-localstorage": "^0.6.2",
         "xss": "^1.0.9",
         "xss-clean": "^0.1.1"
