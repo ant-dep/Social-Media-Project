@@ -35,7 +35,7 @@ db.like = require("./Like")(sequelize, Sequelize)
 db.user.hasMany(db.post);
 
 db.post.belongsTo(db.user, {
-    foreignKey: "user_id",
+    foreignKey: "userId",
 });
 
 // COMMENTS

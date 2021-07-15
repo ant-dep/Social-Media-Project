@@ -1,5 +1,5 @@
 const models = require('../models');
-const jwtUtils = require('../utils/jwt.utils');
+const jwt = require('../middleware/auth');
 const asyncLib = require('async'); // to warp functions within a Waterfall
 
 // Constants
@@ -15,7 +15,7 @@ module.exports = {
     likePost: function(req, res) {
         // Getting auth header
         let headerAuth = req.headers['authorization'];
-        let userId = jwtUtils.getUserId(headerAuth);
+        let userId = jwt.getUserId(headerAuth);
 
         // Params
         const postId = parseInt(req.params.postId);
@@ -135,7 +135,7 @@ module.exports = {
 
     dislikePost: function(req, res) {
         let headerAuth = req.headers['authorization'];
-        let userId = jwtUtils.getUserId(headerAuth);
+        let userId = jwt.getUserId(headerAuth);
         const postId = parseInt(req.params.postId);
 
         if (postId <= 0) {

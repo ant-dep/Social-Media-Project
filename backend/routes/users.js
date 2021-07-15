@@ -5,7 +5,6 @@ const usersCtrl = require('../controllers/usersCtrl');
 const passValidate = require('../middleware/passValidate');
 const mailValidate = require('../middleware/mailValidate');
 const rateLimit = require("express-rate-limit");
-const auth = require('../middleware/auth');
 
 // Limits the number of try per connection
 const rateLimiter = rateLimit({
@@ -17,7 +16,8 @@ const rateLimiter = rateLimit({
 // ----------  USERS ROUTES  ----------  //
 router.post('/signup', mailValidate, passValidate, usersCtrl.signup);
 router.post('/login', rateLimiter, usersCtrl.login);
+router.get('/me', usersCtrl.findByPk);
 router.delete('/:id', usersCtrl.delete);
-router.put('/:id', auth, usersCtrl.update);
+router.put('/:id', usersCtrl.update);
 
 module.exports = router;

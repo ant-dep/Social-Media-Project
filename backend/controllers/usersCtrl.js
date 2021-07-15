@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const MaskData = require("maskdata");
-const jwtUtils = require('../utils/jwt.utils');
+const jwt = require('../middleware/auth');
 const db = require("../models/index");
 const User = db.user;
 const asyncLib = require('async');
@@ -10,8 +10,8 @@ const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"
 // hide emails details for confidentiality
 const emailMaskOptions = {
     maskWith: "*",
-    unmaskedStartCharactersBeforeAt: 1,
-    unmaskedEndCharactersAfterAt: 1,
+    unmaskedStartCharactersBeforeAt: 3,
+    unmaskedEndCharactersAfterAt: 8,
     maskAtTheRate: false,
 };
 // ----------  CRUD MODEL  ----------  //
@@ -149,7 +149,7 @@ exports.login = (req, res, next) => {
         if (userFound) {
             return res.status(201).json({
                 'userId': userFound.id,
-                'token': jwtUtils.generateTokenForUser(userFound)
+                'token': jwt.generateTokenForUser(userFound)
             });
         } else {
             return res.status(500).json({ 'error': 'cannot log on user' });
@@ -162,7 +162,7 @@ exports.login = (req, res, next) => {
 exports.findByPk = (req, res) => {
     // Getting auth header
     const headerAuth = req.headers['authorization'];
-    const userId = jwtUtils.getUserId(headerAuth);
+    const userId = jwt.getUserId(headerAuth);
 
     // Checks if this user get a valid id
     if (userId < 0)
@@ -188,11 +188,11 @@ exports.findByPk = (req, res) => {
 exports.update = (req, res) => {
     // Getting auth header
     const headerAuth = req.headers['authorization'];
-    const userId = jwtUtils.getUserId(headerAuth);
+    const userId = jwt.getUserId(headerAuth);
 
     // Params
     const pseudo = req.body.pseudo;
-    const email = MaskData.maskEmail2(req.body.email, emailMaskOptions);
+    const email = req.body.email;
     const password = req.body.password;
 
     asyncLib.waterfall([

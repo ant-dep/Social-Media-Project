@@ -1,57 +1,107 @@
 const db = require("../models/index");
+const jwt = require('../middleware/auth');
 const Post = db.post;
 const User = db.user;
 const Comment = db.comment;
 const fs = require('fs');
+const asyncLib = require('async');
 
 // ----------  CRUD MODEL  ----------  //
 
+const CONTENT_LIMIT = 2;
+const ITEMS_LIMIT = 50;
+
 // ----------  CREATE  ----------  //
 exports.createPost = (req, res, next) => {
+    // Getting auth header
+    const headerAuth = req.headers['authorization'];
+    const userId = jwt.getUserId(headerAuth);
 
-    // Checking if the post is blank
-    if (req.body.content == null) {
-        return res.status(400).send({
-            message: "Votre message ne peut pas être vide"
-        });
+    // Params
+    const content = req.body.content;
+    // Checks if there is a file and define its address or leave it blank
+    const imageUrl = req.body.content && req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
+
+    if (content == null) {
+        return res.status(400).json({ 'error': 'missing body' });
     }
-    console.log(req.body);
-    const post = {
-        content: req.body.content,
-        // Getting auth header
-        headerAuth: req.headers['authorization'],
-        userId: jwtUtils.getUserId(headerAuth),
-        // Checks if there is a file and define its address or leave it blank
-        imageUrl: req.body.content && req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null,
-    };
-    // Save the post
-    Post.create(post)
-        .then(() => res.status(201).json({ message: 'Post enregistré !' }))
-        .catch(() => res.status(400).json({ message: "erreur post controller" }));
+
+    asyncLib.waterfall([
+
+        // 1. Get the user to be linked with the post
+        function(done) {
+            User.findOne({
+                    where: { id: userId }
+                })
+                .then(function(userFound) {
+                    done(null, userFound);
+                })
+                .catch(function(err) {
+                    return res.status(500).json({ 'error': 'unable to verify user' });
+                });
+        },
+
+        // 2. If found, create the post with inputs
+        function(userFound, done) {
+            if (userFound) {
+                Post.create({
+                        content: content,
+                        imageUrl: imageUrl,
+                        likes: 0,
+                        UserId: userFound.id
+                    })
+                    .then(function(newPost) {
+                        done(newPost);
+                    });
+            } else {
+                res.status(404).json({ 'error': 'user not found' });
+            }
+        },
+
+        // 3. if done, confirm it
+    ], function(newPost) {
+        if (newPost) {
+            return res.status(201).json(newPost);
+        } else {
+            return res.status(500).json({ 'error': 'cannot send post' });
+        }
+    })
 };
+
 
 // ----------  READ  ----------  //
 exports.findAll = (req, res) => {
 
+    const fields = req.query.fields; // DB table fields to load
+    const limit = parseInt(req.query.limit); // Limits the number..
+    const offset = parseInt(req.query.offset); // ..of posts loaded
+    const order = req.query.order;
+
+    if (limit > ITEMS_LIMIT) {
+        limit = ITEMS_LIMIT;
+    }
+    // Get all posts by pseudo
     Post.findAll({
-            include: [{
-                model: User,
-                Comment,
-                attributes: ['pseudo']
-            }],
-            // Loads post most recent first
-            order: [
-                ['createdAt', 'DESC']
-            ],
-        })
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || "Une erreur s'est produite lors de la récupération"
-            });
-        });
+        // Never Trust User Inputs -> test them
+        order: [(order != null) ? order.split(':') : ['content', 'DESC']],
+        attributes: (fields !== '*' && fields != null) ? fields.split(',') : null,
+        limit: (!isNaN(limit)) ? limit : null,
+        offset: (!isNaN(offset)) ? offset : null,
+        include: [{ // Links the post with User and Comments tables
+            model: User,
+            Comment,
+            attributes: ['pseudo']
+        }]
+    }).then(function(posts) {
+        if (posts) {
+            res.status(200).json(posts); // Then loads them
+        } else {
+            res.status(404).json({ "error": "no post found" });
+        }
+    }).catch(function(err) {
+        console.log(err);
+        res.status(500).json({ "error": "invalid fields" });
+    });
 };
 
 // ----------  UPDATE  ----------  //
