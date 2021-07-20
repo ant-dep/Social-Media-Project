@@ -83,7 +83,7 @@ exports.findAll = (req, res) => {
     // Get all posts by pseudo
     Post.findAll({
         // Never Trust User Inputs -> test them
-        order: [(order != null) ? order.split(':') : ['content', 'DESC']],
+        order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']],
         attributes: (fields !== '*' && fields != null) ? fields.split(',') : null,
         limit: (!isNaN(limit)) ? limit : null,
         offset: (!isNaN(offset)) ? offset : null,
@@ -107,12 +107,15 @@ exports.findAll = (req, res) => {
 // ----------  UPDATE  ----------  //
 exports.modifyPost = (req, res, next) => {
 
+    const headerAuth = req.headers['authorization'];
+    const userId = jwt.getUserId(headerAuth);
+
     if (!req.body) {
         return res.status(400).send({
             message: "Votre message modifié ne peut pas être vide"
         });
     }
-    const id = req.params.id;
+    const id = userId;
 
     Post.modifyPost(id, req.body)
         .then(data => {

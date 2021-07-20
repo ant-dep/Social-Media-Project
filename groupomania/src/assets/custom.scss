@@ -1,0 +1,6 @@
+//toujours modifier le css bootstrap avant les imports
+$primary:#5D6D7E;
+$secondary:#000000;
+@import '../../node_modules/bootstrap/scss/bootstrap.scss';
+@import '../../node_modules/bootstrap-vue/src/index.scss';
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap');

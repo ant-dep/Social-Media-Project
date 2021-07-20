@@ -1,26 +1,19 @@
 const bcrypt = require("bcrypt");
-const MaskData = require("maskdata");
 const jwt = require('../middleware/auth');
 const db = require("../models/index");
 const User = db.user;
+
 const asyncLib = require('async');
 
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-// hide emails details for confidentiality
-const emailMaskOptions = {
-    maskWith: "*",
-    unmaskedStartCharactersBeforeAt: 3,
-    unmaskedEndCharactersAfterAt: 8,
-    maskAtTheRate: false,
-};
 // ----------  CRUD MODEL  ----------  //
 
 // ----------  SIGN UP  (CREATE) ----------  //
 exports.signup = async(req, res, next) => {
 
     // Params
-    const email = MaskData.maskEmail2(req.body.email, emailMaskOptions);
+    const email = req.body.email;
     const pseudo = req.body.pseudo;
     const password = req.body.password;
 
@@ -102,7 +95,7 @@ exports.signup = async(req, res, next) => {
 exports.login = (req, res, next) => {
 
     // Params
-    const email = MaskData.maskEmail2(req.body.email, emailMaskOptions);
+    const email = req.body.email;
     const password = req.body.password;
 
     if (email == null || password == null) {
@@ -239,12 +232,23 @@ exports.update = (req, res) => {
 
 
 // ----------  DELETE  ----------  //
-exports.delete = (req, res) => {
+exports.delete = (req, res, next) => {
 
-    const id = req.params.id;
-    User.destroy({ // delete user
-            where: { id: id }
+    // Getting auth header
+    const headerAuth = req.headers['authorization'];
+    const userId = jwt.getUserId(headerAuth);
+
+    User.findOne({
+            where: { id: req.params.id }
         })
-        .then(() => res.status(200).json({ message: 'Utilisateur supprimé' })) // send confirmation if done
-        .catch(error => res.status(500).json({ 'error': 'cannot delete user' }));
+        .then(user => {
+            if (user) {
+                User.destroy({
+                        where: { id: req.params.id }
+                    })
+                    .then(() => res.status(200).json({ message: 'Utilisateur supprimé' })) // send confirmation if done
+                    .catch(error => res.status(500).json({ 'error': 'cannot delete user' }));
+            }
+        })
+        .catch(error => res.status(500).json({ 'error': 'cannot find user' }));
 };
