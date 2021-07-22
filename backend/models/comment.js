@@ -2,8 +2,6 @@
 const {
     Model
 } = require('sequelize');
-
-// ----------  COMMENTS MODEL CREATED via SEQUELIZE ----------  //
 module.exports = (sequelize, DataTypes) => {
     class Comment extends Model {
         /**
@@ -12,45 +10,20 @@ module.exports = (sequelize, DataTypes) => {
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-            // N to M assiciation from Post to User through Like
-            models.User.belongsToMany(models.Post, {
-                through: models.Like,
-                foreignKey: 'userId',
-                otherKey: 'postsId',
-            });
-            models.Post.belongsToMany(models.User, {
-                through: models.Like,
-                foreignKey: 'postsId',
-                otherKey: 'userId',
-            });
-
-            // Links from Tables and the foreign key
+            // define association here
             models.Comment.belongsTo(models.User, {
-                foreignKey: 'userId',
-                as: 'user',
-            });
+                foreignKey: 'userId'
+            })
             models.Comment.belongsTo(models.Post, {
-                foreignKey: 'postsId',
-                as: 'post',
-            });
+                foreignKey: 'postId'
+            })
         }
     };
     Comment.init({
+
         content: DataTypes.STRING,
-        usersId: {
-            type: DataTypes.INTEGER,
-            references: {
-                model: 'User',
-                key: 'id'
-            }
-        },
-        postsId: {
-            type: DataTypes.INTEGER,
-            references: {
-                model: 'Post',
-                key: 'id'
-            }
-        },
+        userId: DataTypes.INTEGER,
+        postId: DataTypes.INTEGER
     }, {
         sequelize,
         modelName: 'Comment',

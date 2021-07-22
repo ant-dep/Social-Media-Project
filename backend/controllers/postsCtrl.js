@@ -71,6 +71,9 @@ exports.createPost = (req, res, next) => {
 
 // ----------  READ  ----------  //
 exports.findAll = (req, res) => {
+    // Getting auth header
+    const headerAuth = req.headers['authorization'];
+    const userId = jwt.getUserId(headerAuth);
 
     const fields = req.query.fields; // DB table fields to load
     const limit = parseInt(req.query.limit); // Limits the number..
@@ -80,28 +83,54 @@ exports.findAll = (req, res) => {
     if (limit > ITEMS_LIMIT) {
         limit = ITEMS_LIMIT;
     }
-    // Get all posts by pseudo
-    Post.findAll({
-        // Never Trust User Inputs -> test them
-        order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']],
-        attributes: (fields !== '*' && fields != null) ? fields.split(',') : null,
-        limit: (!isNaN(limit)) ? limit : null,
-        offset: (!isNaN(offset)) ? offset : null,
-        include: [{ // Links the post with User and Comments tables
-            model: User,
-            Comment,
-            attributes: ['pseudo']
-        }]
-    }).then(function(posts) {
-        if (posts) {
-            res.status(200).json(posts); // Then loads them
-        } else {
-            res.status(404).json({ "error": "no post found" });
-        }
-    }).catch(function(err) {
-        console.log(err);
-        res.status(500).json({ "error": "invalid fields" });
-    });
+
+    asyncLib.waterfall([
+
+            // 1. Check if the user exists
+            function(done) {
+                User.findOne({
+                        where: { id: userId }
+                    })
+                    .then(function(userFound) {
+                        done(null, userFound);
+                    })
+                    .catch(function(err) {
+                        return res.status(500).json({ 'error': 'unable to verify user' });
+                    });
+            },
+            // 2. If found, get all posts by pseudo
+            function(userFound, done) {
+                if (userFound) {
+                    Post.findAll({
+                        // Never Trust User Inputs -> test them
+                        order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']],
+                        attributes: (fields !== '*' && fields != null) ? fields.split(',') : null,
+                        limit: (!isNaN(limit)) ? limit : null,
+                        offset: (!isNaN(offset)) ? offset : null,
+                        include: [{ // Links the post with User and Comments tables
+                            model: User,
+                            Comment,
+                            attributes: ['pseudo']
+                        }]
+                    }).then(function(posts) {
+                        done(posts)
+                    }).catch(function(err) {
+                        console.log(err);
+                        res.status(500).json({ "error": "invalid fields" });
+                    });
+                } else {
+                    res.status(404).json({ 'error': 'user not found' });
+                }
+            },
+            // 3. if done, confirm it
+        ],
+        function(posts) {
+            if (posts) {
+                return res.status(201).json(posts);
+            } else {
+                return res.status(500).json({ 'error': 'cannot send post' });
+            }
+        })
 };
 
 // ----------  UPDATE  ----------  //

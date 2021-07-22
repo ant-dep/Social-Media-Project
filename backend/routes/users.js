@@ -15,7 +15,7 @@ const rateLimiter = rateLimit({
 // ----------  USERS ROUTES  ----------  //
 router.post('/signup', passValidate, usersCtrl.signup);
 router.post('/login', rateLimiter, usersCtrl.login);
-router.get('/me', usersCtrl.findByPk);
+router.get('/profile', usersCtrl.findByPk);
 router.delete('/:id', usersCtrl.delete);
 router.put('/:id', usersCtrl.update);
 

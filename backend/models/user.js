@@ -2,8 +2,6 @@
 const {
     Model
 } = require('sequelize');
-
-// ----------  USER MODEL CREATED via SEQUELIZE ----------  //
 module.exports = (sequelize, DataTypes) => {
     class User extends Model {
         /**

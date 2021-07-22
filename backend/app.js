@@ -32,8 +32,8 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(cors());
 app.use('/api/post', postsRoutes);
 app.use('/api/users', usersRoutes);
-app.use('/api', commentsRoutes);
-app.use('/api', likesRoutes);
+app.use('/api/post', commentsRoutes);
+app.use('/api/post', likesRoutes);
 
 // Input sanitization against XXS attacks
 app.use(xss());

@@ -13,37 +13,31 @@ const routes = [{
         path: '/signup',
         name: 'Signup',
         component: () =>
-            import ('../views/Signup.vue')
+            import ('../views/SignupView.vue')
     },
     {
         path: '/login',
         name: 'Login',
         component: () =>
-            import ('../views/Login.vue')
+            import ('../views/LoginView.vue')
     },
     {
-        path: '/me',
-        name: 'Me',
+        path: '/profile',
+        name: 'Profile',
         component: () =>
-            import ('../views/Me.vue')
+            import ('../views/ProfileView.vue')
     },
     {
         path: '/allpost',
         name: 'allpost',
         component: () =>
-            import ('../views/AllPost.vue')
+            import ('../views/AllPostView.vue')
     },
     {
         path: '/addpost',
         name: 'AddPost',
         component: () =>
-            import ('../views/AddPost.vue')
-    },
-    {
-        path: '/post/:id',
-        name: 'Post',
-        component: () =>
-            import ('../views/Post.vue')
+            import ('../views/AddPostView.vue')
     },
 ]
 

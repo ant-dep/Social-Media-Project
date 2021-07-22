@@ -4,6 +4,6 @@ const commentsCtrl = require('../controllers/commentsCtrl');
 
 // ----------  COMMENTS ROUTES  ----------  //
 router.post('/:id/comment', commentsCtrl.createComment);
-router.get('/:id/comment', commentsCtrl.getAllComments);
+router.get('/comment', commentsCtrl.getAllComments);
 
 module.exports = router;

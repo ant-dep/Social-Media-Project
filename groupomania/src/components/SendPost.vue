@@ -45,10 +45,10 @@ export default {
     name: "sendPost",
     data() {
         return {
-            user_id: parseInt(localStorage.getItem('userId')),
+            userId: parseInt(localStorage.getItem('userId')),
             content: "",
             image: "",
-            post_id:"",
+            postId:"",
             pseudo: localStorage.getItem("pseudo")
         }
     },
@@ -70,10 +70,10 @@ export default {
                 if (this.image !== null) {
                 formData.append("image", this.image);
                 formData.append("content", this.content);
-                formData.append("user_id",parseInt(localStorage.getItem('userId')));
+                formData.append("userId",parseInt(localStorage.getItem('userId')));
             } else {
                 formData.append("content", this.content);
-                formData.append("user_id",parseInt(localStorage.getItem('userId')));
+                formData.append("userId",parseInt(localStorage.getItem('userId')));
             }
 
             axios.post('http://localhost:3000/api/post/new', formData, {

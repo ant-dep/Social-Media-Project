@@ -18,7 +18,7 @@
                 </div>
                 <div class="row">
                     <div class="col-8 mx-auto">
-                        <b-link class="delete btn font-weight-bold py-1 my-5" @click.prevent="deleteUser"><small>Supprimer mon compte</small></b-link>
+                        <b-link class="delete badge badge-light font-weight-bold py-1 my-5" @click.prevent="deleteUser"><small>Supprimer mon compte</small></b-link>
                     </div>
                 </div>
             </div>
@@ -48,6 +48,24 @@ export default {
             required,
         },
     },
+
+  beforeCreate() {
+    axios
+        .get('http://localhost:3000/api/users/profile', {
+        headers: {
+            "Content-Type": "multipart/form-data",
+            "Authorization": 'Bearer ' + localStorage.getItem('token')
+        }
+        })
+        .then((response) => {
+        console.log(response);
+        })
+        .catch(e => {
+        console.log(e + "User inconnu");
+        this.$router.push('/login');
+        window.alert('Veuillez vous connecter pour accéder au site')
+        })
+  },
 
     methods:{
 
