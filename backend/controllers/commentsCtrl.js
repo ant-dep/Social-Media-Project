@@ -7,33 +7,18 @@ const asyncLib = require('async');
 // ----------  CREATE  ----------  //
 exports.createComment = (req, res, next) => {
 
-    // Getting auth header
-    const headerAuth = req.headers['authorization'];
-    const userId = jwt.getUserId(headerAuth);
-
-    // Params
-    const comment = {
-        content: req.body.content,
-        userId: req.body.userId,
-        postId: req.body.postId
-    }
-
-    if (comment.content == null) {
-        return res.status(400).json({ 'error': 'missing body' });
-    }
-
     asyncLib.waterfall([
 
-        // 1. Get the user to be linked with the comment
+        // 1. Get the user to be linked with the post
         function(done) {
             User.findOne({
-                    where: { id: userId }
+                    where: { id: req.body.userId }
                 })
                 .then(function(userFound) {
                     done(null, userFound);
                 })
                 .catch(function(err) {
-                    return res.status(500).json({ 'error': 'unable to verify user' + err });
+                    return res.status(500).json({ 'error': 'unable to verify user' });
                 });
         },
 
@@ -41,8 +26,11 @@ exports.createComment = (req, res, next) => {
         function(userFound, done) {
             if (userFound) {
                 // Create the post and save it in DB
-                Comment
-                    .create(comment)
+                Comment.create({
+                        content: req.body.content,
+                        userId: req.body.userId,
+                        postId: req.body.postId
+                    })
                     .then(function(newComment) {
                         done(newComment)
                     })
@@ -103,4 +91,21 @@ exports.getAllComments = (req, res, next) => {
             return res.status(500).json({ 'error': 'cannot send comment' });
         }
     })
+};
+
+// ----------  DELETE  ----------  //
+exports.deleteComment = (req, res, next) => {
+
+    Comment.findOne({
+            where: {
+                id: req.params.id
+            }
+        }).then(comment => {
+            if (comment) {
+                Comment.destroy({ where: { id: req.params.id } })
+                    .then(() => res.status(200).json({ message: 'Comment supprimé !' }))
+                    .catch(error => res.status(400).json({ error }));
+            }
+        })
+        .catch(error => res.status(400).json({ message: "Comment introuvable", error: error }))
 };

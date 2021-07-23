@@ -7,9 +7,9 @@
                 <b-collapse id="nav-collapse" is-nav>
                     <b-navbar-nav class="ml-auto">
                         <div class="d-flex justify-content-end align-items-center">
-                            <b-nav-item v-if="isActive" id="Accueil" size="sm" class="mr-sm-3 font-weight-bold"><router-link to="/allpost" class="nav-link">Accueil</router-link></b-nav-item>
-                            <b-nav-item size="sm" class="mr-sm-3 font-weight-bold"><router-link to="/profile" class="nav-link">Mon Compte</router-link></b-nav-item>
-                            <b-nav-item size="sm" class="mr-sm-2 font-weight-bold"  @click="logout" >Se déconnecter</b-nav-item>
+                            <b-nav-item v-if="isActive" id="Accueil" size="sm" class="mr-3 font-weight-bold"><router-link to="/allpost" class="nav-link">Accueil</router-link></b-nav-item>
+                            <b-nav-item size="sm" class="mr-3 font-weight-bold"><router-link to="/profile" class="nav-link">Mon Compte</router-link></b-nav-item>
+                            <b-nav-item size="sm" class="mr-2 font-weight-bold"  @click="logout" >Se déconnecter</b-nav-item>
                         </div>
                     </b-navbar-nav>
                 </b-collapse>
@@ -21,8 +21,8 @@
 <script>
 export default {
     // Check if the current page is allpost and hide the "Acceuil" button now useless
-    mounted: function() {
-    if (window.location.pathname === '/Allpost') {
+    created: function() {
+    if (window.location.pathname === '/allpost') {
             this.isActive = false
         }
     },

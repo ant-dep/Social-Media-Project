@@ -82,8 +82,8 @@ methods:{
         password: this.password,
         })
         .then((res) => {
-            localStorage.setItem("token",   res.data.token)
-            localStorage.setItem("userId",  res.data.userId)
+            localStorage.setItem("token", res.data.token)
+            localStorage.setItem("userId", res.data.userId)
             console.log(res);
             alert("Bienvenue ! Vous êtes connecté ! ");
             this.$router.push('/allpost');

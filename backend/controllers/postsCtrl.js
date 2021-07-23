@@ -155,7 +155,7 @@ exports.modifyPost = (req, res, next) => {
             } else res.send({ message: "Post modifié avec succes ! " });
         })
         .catch(err => {
-            res.status(500).send({ message: "Erreur avec la modification ud post avec l'id" + id });
+            res.status(500).send({ message: "Erreur avec la modification du post avec l'id" + id });
         });
 };
 

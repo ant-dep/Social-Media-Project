@@ -28,6 +28,12 @@ const routes = [{
             import ('../views/ProfileView.vue')
     },
     {
+        path: '/allprofiles',
+        name: 'AllProfiles',
+        component: () =>
+            import ('../views/AllProfilesView.vue')
+    },
+    {
         path: '/allpost',
         name: 'allpost',
         component: () =>

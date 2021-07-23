@@ -13,12 +13,17 @@
 
       <template v-slot:Comments v-if="comments !== null">
         <div class="last-comments">
-          <div class="comment-bloc"
-              v-for="comment in comments"
+          <div class="comment-bloc container"
+              v-for="(comment) in comments.filter((comment) => {
+                return comment.postId == post.id; })"
               :key="comment.id">
-            <div v-if="comments.postId == posts.postId" class="comment-area">
-              <p v-if="comments.userId == user.id" class="user-name">{{ user.pseudo }}</p>
-              <p>{{ comment.content }}</p>
+            <div v-if="comments.postId == posts.id" class="row comment-area">
+              <p v-if="comments.userId == userId" class="col-3 user-name my-1">{{ users.map((user) => {
+                    if (user.id === comment.userId) return user.pseudo;
+                  }).join("") }}
+              </p>
+              <p class="col-9 mx-auto my-1">{{ comment.content }}</p>
+              <button v-if="userId == comment.userId || userId == 4" class="col-1 px-3 py-1 btn" @click.prevent="deleteCom(comment.id)" id="delcom" type="submit"><i class="text-dark fa fa-times"></i></button>
             </div>
           </div>
         </div>
@@ -27,12 +32,14 @@
       <template v-slot:EditCom>
         <div>
           <form>
-            <div>
-              <textarea id="contentComment" class="form-control-sm w-100" v-model="comment.content" aria-label="Zone d'un commentaire" placeholder="Commenter"></textarea>
+            <div class="row">
+              <p class="col-2">{{ pseudo }}</p>
+              <textarea id="newComment" class="col-10 form-control-sm" v-model.trim="$v.newComment.$model" aria-label="Zone d'un commentaire" placeholder="Commenter"></textarea>
+              <div class="error" v-if="!$v.newComment.maxLength">Max. {{ $v.newComment.$params.maxLength.max }} letters</div>
             </div>
             <div>
               <button class="btn btn-light rounded p-2 mt-2 mr-2" @click.prevent="sendCom(post.id)" id="sendcom" type="submit" aria-label="Publication d'un commentaire">Commenter</button>
-              <button v-if="userId == post.userId || isAdmin == 1" class="btn btn-light rounded py-2 px-3 mt-2" @click.prevent="deletePost(post.id)" id="delpost" type="submit"><i class="fa fa-trash"></i></button>
+              <button v-if="userId == post.userId || userId == 4" class="btn btn-light rounded py-2 px-3 mt-2" @click.prevent="deletePost(post.id)" id="delpost" type="submit"><i class="fa fa-trash"></i></button>
             </div>
           </form>
         </div>
@@ -50,6 +57,7 @@ import CreatePostBtn from '@/components/CreatePostBtn.vue'
 import Post from '@/components/Post.vue'
 import Footer from '@/components/Footer.vue'
 
+import { required, maxLength } from "vuelidate/lib/validators";
 import axios from "axios";
 
 export default {
@@ -59,8 +67,11 @@ export default {
   },
   data() {
     return {
-      posts: "",
-      comments: "",
+      token: localStorage.getItem('token'),
+      pseudo: localStorage.getItem('pseudo'),
+      users: [],
+      posts: [],
+      comments: [],
       userId: localStorage.getItem("userId"),
       isAdmin: 1,
       post: {
@@ -69,7 +80,6 @@ export default {
         content: "",
         imageUrl: "",
       },
-      id:"",
       user: {
         pseudo:"",
         id:""
@@ -77,17 +87,37 @@ export default {
       comment: {
           content: "",
           userId: "",
+          postId: "",
           id:""
         },
-      contentComment: {
-        content: ""
-      },
+      newComment: "",
     }
   },
 
-  created() {
+  validations: {
+    newComment: { required, maxLength: maxLength(140) },
+  },
+  async created() {
+
+    // USERS
+    await axios
+    .get('http://localhost:3000/api/users', {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        "Authorization": 'Bearer ' + localStorage.getItem('token')
+      }
+    })
+    .then((response) => {
+      this.users = response.data;
+      console.log(response);
+    })
+    .catch(e => {
+      console.log(e + "User inconnu ou Users indisponibles");
+    }),
+
+
     // POSTS
-    axios
+    await axios
     .get('http://localhost:3000/api/post', {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -105,7 +135,7 @@ export default {
     })
 
     // COMMENTS
-    axios
+    await axios
     .get('http://localhost:3000/api/post/comment', {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -128,33 +158,46 @@ export default {
       return `images/${this.imageUrl}`
     },
 
-    sendCom(id) {
-      const newComment = {
-        "content": this.comment.content,
-        "userId": parseInt(localStorage.getItem('userId')),
-        "postId": id
-      };
-      console.log(newComment)
+    async sendCom(id) {
+      this.$v.$touch();
+      if(this.newComment !== null){
 
+        await axios
+          .post('http://localhost:3000/api/post/' + id + '/comment', {
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            content: this.newComment,
+            userId: parseInt(localStorage.getItem('userId')),
+            postId: id
+          })
+          .then((res) => {
+            console.log(res);
+            alert("Commentaire posté");
+            this.$router.go()
+          })
+          .catch(() => {
+                console.log("Impossible d'éditer le post, une erreur est survenue");
+          })
+      }
+    },
+
+    deleteCom(id) {
       axios
-        .post('http://localhost:3000/api/post/' + id + '/comment', newComment, {
+        .delete('http://localhost:3000/api/post/' + id + '/comment', {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
             "Authorization": 'Bearer ' + localStorage.getItem('token')
           }
         })
-        .then((res) => {
-          console.log(res);
-          console.log(res);
-          alert("Commentaire posté");
+        .then(response => {
+          alert("Le commentaire a été supprimé !")
+          console.log(response);
+          this.$router.go()
         })
-        .catch(e => {
-              console.log(e + "Impossible d'éditer le post, une erreur est survenue");
+        .catch(error => {
+          window.alert(error);
         })
-    },
-
-    setComment(event){
-      this.commentContent = event.target.value
     },
 
     deletePost(id) {

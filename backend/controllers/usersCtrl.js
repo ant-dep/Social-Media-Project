@@ -152,14 +152,15 @@ exports.login = (req, res, next) => {
 
 
 // ----------  FIND BY PRIMARY KEY (READ - sequelize)  ----------  //
-exports.findByPk = (req, res) => {
+exports.findByPk = (req, res, next) => {
     // Getting auth header
     const headerAuth = req.headers['authorization'];
     const userId = jwt.getUserId(headerAuth);
 
     // Checks if this user get a valid id
-    if (userId < 0)
+    if (userId < 0) {
         return res.status(400).json({ 'error': 'wrong token' });
+    }
 
     // Getting user infos linked to his id
     User.findOne({
@@ -176,14 +177,56 @@ exports.findByPk = (req, res) => {
     });
 };
 
-
-// ----------  UPDATE  ----------  //
-exports.update = (req, res) => {
+// ----------  READ  ----------  //
+exports.findAll = (req, res) => {
     // Getting auth header
     const headerAuth = req.headers['authorization'];
     const userId = jwt.getUserId(headerAuth);
 
+    asyncLib.waterfall([
+
+            // 1. Check if the user exists
+            function(done) {
+                User.findOne({
+                        where: { id: userId }
+                    })
+                    .then(function(userFound) {
+                        done(null, userFound);
+                    })
+                    .catch(function(err) {
+                        return res.status(500).json({ 'error': 'unable to verify user' });
+                    });
+            },
+            // 2. If found, get all users by pseudo and id
+            function(userFound, done) {
+                if (userFound) {
+                    User.findAll({})
+                        .then(function(users) {
+                            done(users)
+                        }).catch(function(err) {
+                            console.log(err);
+                            res.status(500).json({ "error": "invalid fields" });
+                        });
+                } else {
+                    res.status(404).json({ 'error': 'user not found' });
+                }
+            },
+            // 3. if done, confirm it
+        ],
+        function(users) {
+            if (users) {
+                return res.status(201).json(users);
+            } else {
+                return res.status(500).json({ 'error': 'cannot send users' });
+            }
+        })
+};
+
+
+// ----------  UPDATE  ----------  //
+exports.update = (req, res, next) => {
     // Params
+    const userId = req.body.userId;
     const pseudo = req.body.pseudo;
     const email = req.body.email;
     const password = req.body.password;

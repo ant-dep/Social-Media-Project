@@ -17,6 +17,7 @@
                                         <div class="form-group mb-0">
                                             <label class="sr-only" for="content">Créer un post</label>
                                             <b-form-textarea name="content" type="text" v-model="content" class="form-control border-0" id="content" rows="2" placeholder="Quoi de neuf aujourd'hui ?" required></b-form-textarea>
+                                            <div class="error" v-if="!$v.content.maxLength">Max. {{ $v.content.$params.maxLength.max }} letters</div>
                                         </div>
                                         <div class="form-group">
                                             <label for="image">
@@ -55,8 +56,7 @@ export default {
 
     validations: {
         content: {
-            required,
-            maxLength: maxLength(255)
+            required, maxLength: maxLength(140)
         }
     },
 
@@ -66,15 +66,16 @@ export default {
                 this.image = this.$refs.image.files[0];
             },
             createPost() {
-            const formData = new FormData();
+                this.$v.$touch();
+                const formData = new FormData();
                 if (this.image !== null) {
-                formData.append("image", this.image);
-                formData.append("content", this.content);
-                formData.append("userId",parseInt(localStorage.getItem('userId')));
-            } else {
-                formData.append("content", this.content);
-                formData.append("userId",parseInt(localStorage.getItem('userId')));
-            }
+                    formData.append("image", this.image);
+                    formData.append("content", this.content);
+                    formData.append("userId",parseInt(localStorage.getItem('userId')));
+                } else if(this.content !== null){
+                    formData.append("content", this.content);
+                    formData.append("userId",parseInt(localStorage.getItem('userId')));
+                }
 
             axios.post('http://localhost:3000/api/post/new', formData, {
                 headers: {
