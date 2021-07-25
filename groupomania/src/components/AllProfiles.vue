@@ -3,12 +3,10 @@
         <div class="row mx-auto mb-5">
             <div class="col-8 col-lg-6 mx-auto border rounded bg-primary py-2">
                 <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="text-white font-weight-bold px-3">{{ userId }}</span>
-                        <span class="text-white font-weight-bold px-3">{{ pseudo }}</span>
-                        <span class="text-white font-weight-bold px-3">{{ email }}</span>
-                    </div>
-                    <span class="badge text-white align-self-start p-0">{{ createdAt.substr(0, 10).split("-").reverse().join("-") }}</span>
+                    <span class="text-white font-weight-bold px-3">{{ id }}</span>
+                    <span class="text-white font-weight-bold px-3">{{ pseudo }}</span>
+                    <span class="text-white font-weight-bold px-3">{{ email }}</span>
+                    <b-link class="delete badge badge-light font-weight-bold py-1 my-5" @click.prevent="deleteUser(user.id)"><small>Supprimer ce compte</small></b-link>
                 </div>
             </div>
         </div>
@@ -23,6 +21,7 @@ export default {
     data() {
         return {}
     },
+
     props: {
         pseudo: {
             type: String,
@@ -30,16 +29,10 @@ export default {
         email: {
             type: String,
         },
-        userId: {
+        id: {
             type: Number,
         },
-        imageUrl: {
-            type: String
-        },
-        createdAt: {
-            type: String
-        }
-    },
+    }
 }
 </script>
 

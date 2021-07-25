@@ -24,6 +24,11 @@ module.exports = {
             password: {
                 type: Sequelize.STRING,
                 allowNull: false,
+                default: "https://pic.onlinewebfonts.com/svg/img_431836.png",
+            },
+            imageUrl: {
+                allowNull: true,
+                type: Sequelize.STRING
             },
             isAdmin: {
                 allowNull: false,

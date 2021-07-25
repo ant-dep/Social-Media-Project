@@ -6,6 +6,7 @@
     <Post
         v-for="post in posts"
         :pseudo ="post.User.pseudo"
+        :imageUrlUser ="post.User.imageUrl"
         :content ="post.content"
         :imageUrl ="post.imageUrl"
         :createdAt ="post.createdAt"
@@ -15,15 +16,16 @@
         <div class="last-comments">
           <div class="comment-bloc container"
               v-for="(comment) in comments.filter((comment) => {
-                return comment.postId == post.id; })"
+                return comment.postId == post.id })"
               :key="comment.id">
-            <div v-if="comments.postId == posts.id" class="row comment-area">
-              <p v-if="comments.userId == userId" class="col-3 user-name my-1">{{ users.map((user) => {
-                    if (user.id === comment.userId) return user.pseudo;
-                  }).join("") }}
-              </p>
-              <p class="col-9 mx-auto my-1">{{ comment.content }}</p>
-              <button v-if="userId == comment.userId || userId == 4" class="col-1 px-3 py-1 btn" @click.prevent="deleteCom(comment.id)" id="delcom" type="submit"><i class="text-dark fa fa-times"></i></button>
+            <div v-if="comments.postId == posts.id" class="row comment-area py-1">
+              <img v-if="users.map((user) => {if (user.id === comment.userId) return user.imageUrl;}).join('') !== (null || '')" 
+                :src="users.map((user) => {if (user.id === comment.userId) return user.imageUrl;}).join('')" 
+                class="imgComment"
+              >
+              <p class="col-9 mx-auto text-white font-weight-bold">{{ comment.content }}</p>
+              <button v-if="userId == comment.userId || userId == 4" class="col-1 px-3 btn" @click.prevent="deleteCom(comment.id)" id="delcom" type="submit"><i class="text-dark fa fa-times"></i></button>
+              <hr class="line w-100 my-1">
             </div>
           </div>
         </div>
@@ -33,8 +35,7 @@
         <div>
           <form>
             <div class="row">
-              <p class="col-2">{{ pseudo }}</p>
-              <textarea id="newComment" class="col-10 form-control-sm" v-model.trim="$v.newComment.$model" aria-label="Zone d'un commentaire" placeholder="Commenter"></textarea>
+              <textarea id="newComment" class="col-11 form-control-sm mx-auto" v-model.trim="$v.newComment.$model" aria-label="Zone d'un commentaire" placeholder="Commenter"></textarea>
               <div class="error" v-if="!$v.newComment.maxLength">Max. {{ $v.newComment.$params.maxLength.max }} letters</div>
             </div>
             <div>
@@ -74,22 +75,11 @@ export default {
       comments: [],
       userId: localStorage.getItem("userId"),
       isAdmin: 1,
-      post: {
-        userId: localStorage.getItem("userId"),
-        id:"",
-        content: "",
-        imageUrl: "",
-      },
       user: {
-        pseudo:"",
-        id:""
+        pseudo: "",
+        imageUrl: "",
+        id: ""
       },
-      comment: {
-          content: "",
-          userId: "",
-          postId: "",
-          id:""
-        },
       newComment: "",
     }
   },
@@ -103,7 +93,7 @@ export default {
     await axios
     .get('http://localhost:3000/api/users', {
       headers: {
-        "Content-Type": "multipart/form-data",
+        "Content-Type": "application/x-www-form-urlencoded",
         "Authorization": 'Bearer ' + localStorage.getItem('token')
       }
     })
@@ -223,6 +213,11 @@ export default {
 
 <style scoped>
 
+.imgComment {
+ border-radius: 50%;
+ width: 30px;
+ height: 30px;
+}
 .post {
   position: absolute;
 	overflow: visible;

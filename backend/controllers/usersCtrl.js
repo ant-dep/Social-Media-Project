@@ -16,6 +16,7 @@ exports.signup = async(req, res, next) => {
     const email = req.body.email;
     const pseudo = req.body.pseudo;
     const password = req.body.password;
+    const imageUrl = "https://pic.onlinewebfonts.com/svg/img_24787.png";
 
     // Checking if any of inputs are blanks
     if (req.body.pseudo == null || req.body.email == null || req.body.password == null) {
@@ -65,6 +66,7 @@ exports.signup = async(req, res, next) => {
                 let newUser = User.create({
                         email: email,
                         pseudo: pseudo,
+                        imageUrl: imageUrl,
                         password: bcryptedPassword,
                         isAdmin: 0
                     })
@@ -164,7 +166,7 @@ exports.findByPk = (req, res, next) => {
 
     // Getting user infos linked to his id
     User.findOne({
-        attributes: ['id', 'email', 'pseudo'],
+        attributes: ['id', 'email', 'pseudo', 'imageUrl'],
         where: { id: userId }
     }).then(function(user) {
         if (user) {
@@ -200,7 +202,9 @@ exports.findAll = (req, res) => {
             // 2. If found, get all users by pseudo and id
             function(userFound, done) {
                 if (userFound) {
-                    User.findAll({})
+                    User.findAll({
+                            attributes: ['id', 'pseudo', 'email', 'imageUrl']
+                        })
                         .then(function(users) {
                             done(users)
                         }).catch(function(err) {
@@ -225,16 +229,18 @@ exports.findAll = (req, res) => {
 
 // ----------  UPDATE  ----------  //
 exports.update = (req, res, next) => {
+    // Getting auth header
+    const headerAuth = req.headers['authorization'];
+    const userId = jwt.getUserId(headerAuth);
     // Params
-    const userId = req.body.userId;
     const pseudo = req.body.pseudo;
     const email = req.body.email;
     const password = req.body.password;
+    const imageUrl = req.body && req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
 
     asyncLib.waterfall([
             function(done) {
                 User.findOne({
-                        attributes: ['id', 'pseudo', 'email', 'password'],
                         where: { id: userId }
                     }).then(function(userFound) {
                         done(null, userFound);
@@ -244,13 +250,14 @@ exports.update = (req, res, next) => {
                     });
             },
             function(userFound, done) {
-                if (userFound) {
+                if (userFound && req.body.password) {
                     bcrypt.hash(userFound.password, 12)
                         .then(hash => {
                             userFound.update({
                                     pseudo: (pseudo ? pseudo : userFound.pseudo),
                                     email: (email ? email : userFound.email),
-                                    password: (password ? password : hash)
+                                    password: hash,
+                                    imageUrl: (imageUrl ? imageUrl : userFound.imageUrl)
                                 })
                                 .then(function() {
                                     done(userFound);
@@ -258,6 +265,19 @@ exports.update = (req, res, next) => {
                                 .catch(function(err) {
                                     res.status(500).json({ 'error': 'cannot update user' });
                                 })
+                        })
+                } else if (userFound) {
+                    userFound.update({
+                            pseudo: (pseudo ? pseudo : userFound.pseudo),
+                            email: (email ? email : userFound.email),
+                            imageUrl: (imageUrl ? imageUrl : userFound.imageUrl),
+                            password: userFound.password,
+                        })
+                        .then(function() {
+                            done(userFound);
+                        })
+                        .catch(function(err) {
+                            res.status(500).json({ 'error': 'cannot update user' });
                         })
                 } else {
                     res.status(404).json({ 'error': 'user not found' });

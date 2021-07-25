@@ -64,7 +64,7 @@ export default {
             email: "",
             password: "",
             submited: false,
-            isActive: "true"
+            isActive: true
         }
     },
     // is the references for xxx.$model in html part
@@ -102,7 +102,7 @@ export default {
                     .post( 'http://localhost:3000/api/users/signup', {
                         pseudo: this.pseudo,
                         email: this.email,
-                        password: this.password
+                        password: this.password,
                     })
                     .then(() => {
                         localStorage.setItem('pseudo', this.pseudo)

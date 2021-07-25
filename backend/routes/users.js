@@ -4,6 +4,7 @@ const router = express.Router();
 const usersCtrl = require('../controllers/usersCtrl');
 const passValidate = require('../middleware/passValidate');
 const rateLimit = require("express-rate-limit");
+const multer = require('../middleware/multer-config');
 
 // Limits the number of try per connection
 const rateLimiter = rateLimit({
@@ -18,6 +19,6 @@ router.post('/login', rateLimiter, usersCtrl.login);
 router.get('/profile', usersCtrl.findByPk);
 router.get('/', usersCtrl.findAll);
 router.delete('/:id', usersCtrl.delete);
-router.put('/:id', usersCtrl.update);
+router.put('/:id', multer, usersCtrl.update);
 
 module.exports = router;

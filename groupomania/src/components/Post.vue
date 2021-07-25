@@ -4,7 +4,7 @@
             <div class="col-8 col-lg-6 mx-auto border rounded bg-primary py-2">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <img class="rounded-circle" width="50" src="https://picsum.photos/80/80/?random?image=4">
+                        <img id="imgProfile" class="rounded-circle" :src="imageUrlUser">
                         <span class="text-white font-weight-bold px-3">{{ pseudo }}</span>
                     </div>
                     <span class="badge text-white align-self-start p-0">{{ createdAt.substr(0, 10).split("-").reverse().join("-") }}</span>
@@ -35,6 +35,9 @@ export default {
             type: String,
             default: ""
         },
+        imageUrlUser: {
+            type: String,
+        },
         content: {
             type: String,
             default: ""
@@ -43,7 +46,8 @@ export default {
             type: String
         },
         imageUrl: {
-            type: String
+            type: String,
+            default: "",
         },
         commentContent: {
             type: String
@@ -60,6 +64,11 @@ export default {
 </script>
 
 <style scoped>
+
+#imgProfile {
+    height: 50px;
+    width: 50px;
+}
 
 #imgpost {
  max-width: 200px;
