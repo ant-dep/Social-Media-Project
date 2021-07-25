@@ -2,13 +2,12 @@
     <div class="container-fluid">
             <div class="row">
                 <div class="col-8 mx-auto">
-                    <h1 class="my-4">Votre profil</h1>
+                    <h1 class="my-4">{{ user.pseudo}}</h1>
                 </div>
                 <div class="col-8 mx-auto">
-                    <p class="text-secondary font-weight-bold">{{ user.pseudo}}</p>
-                    <img id="imgProfile" :src="user.imageUrl">
+                    <b-img id="imgProfile" :src="user.imageUrl" fluid></b-img>
                     <div>
-                        <b-button v-b-toggle.newPassword class="btn btn-light text-secondary font-weight-bold">Modifier mes infos</b-button>
+                        <b-button v-b-toggle.newPassword class="btn btn-light text-secondary font-weight-bold mt-3">Modifier mes infos</b-button>
                         <b-collapse id="newPassword">
                             <div class="card col col-lg-8 mx-auto bg-white py-4">
                                 <h1 class="h3 text-secondary mt-3">Modifier mes infos</h1>
@@ -216,6 +215,7 @@ export default {
 
 #imgProfile {
     border-radius: 50%;
+    border: solid #FFD7D8;
     height: 100px;
     width: 100px;
 }

@@ -3,37 +3,58 @@
     <NavbarPost />
     <Jumbo />
     <CreatePostBtn />
-    <Post
-        v-for="post in posts"
-        :pseudo ="post.User.pseudo"
-        :imageUrlUser ="post.User.imageUrl"
-        :content ="post.content"
-        :imageUrl ="post.imageUrl"
-        :createdAt ="post.createdAt"
-        :key="post.id" >
+    <Post v-for="post in posts" :key="post.id" >
 
-      <template v-slot:Comments v-if="comments !== null">
-        <div class="last-comments">
-          <div class="comment-bloc container"
-              v-for="(comment) in comments.filter((comment) => {
-                return comment.postId == post.id })"
-              :key="comment.id">
-            <div v-if="comments.postId == posts.id" class="row comment-area py-1">
-              <img v-if="users.map((user) => {if (user.id === comment.userId) return user.imageUrl;}).join('') !== (null || '')" 
-                :src="users.map((user) => {if (user.id === comment.userId) return user.imageUrl;}).join('')" 
-                class="imgComment"
-              >
-              <p class="col-9 mx-auto text-white font-weight-bold">{{ comment.content }}</p>
-              <button v-if="userId == comment.userId || userId == 4" class="col-1 px-3 btn" @click.prevent="deleteCom(comment.id)" id="delcom" type="submit"><i class="text-dark fa fa-times"></i></button>
-              <hr class="line w-100 my-1">
+      <!-- POST -->
+      <template v-slot:Posts v-if="posts !== null">
+          <div class="container-fluid p-0">
+            <div class="row mx-auto mb-1">
+              <div class="col d-flex justify-content-between align-items-center p-0">
+                  <div>
+                    <img id="imgProfile"
+                        v-if="users.map((user) => {if (user.id === post.userId) return user.imageUrl;}).join('') !== (null || '')"
+                        :src="users.map((user) => {if (user.id === post.userId) return user.imageUrl;}).join('')"
+                        class="rounded-circle"
+                    >
+                    <span class="text-white font-weight-bold px-3 ml-2">{{ post.User.pseudo }}</span>
+                  </div>
+                  <span class="badge text-white align-self-start p-0">{{ post.createdAt.substr(0, 10).split("-").reverse().join("-") }}</span>
+              </div>
             </div>
-          </div>
+            <div class="row mx-auto">
+              <div class="col-11 card my-3 py-2 mx-auto">
+                {{ post.content }}
+                <b-img-lazy v-if="post.imageUrl" :src="post.imageUrl" fluid-grow class="rounded mx-auto pt-1" alt="responsive image"></b-img-lazy>
+              </div>
+            </div>
+            <hr class="line w-100 mb-1">
         </div>
       </template>
 
+      <!-- ITS COMMENTS -->
+      <template v-slot:Comments v-if="comments !== null">
+          <div v-for="(comment) in comments.filter((comment) => {return comment.postId == post.id })"
+              :key="comment.id"
+              class="container-fluid"
+          >
+            <div v-if="comments.postId == posts.id" class="row comment-area py-1">
+              <div>
+                <img v-if="users.map((user) => {if (user.id === comment.userId) return user.imageUrl;}).join('') !== (null || '')"
+                    :src="users.map((user) => {if (user.id === comment.userId) return user.imageUrl;}).join('')"
+                    class="imgComment"
+                >
+                <span id="userNameComment" class="text-white px-2">{{ users.map((user) => {if (user.id === comment.userId) return user.pseudo;}).join("") }}</span>
+              </div>
+              <p class="col-11 d-flex justify-content-start mb-0 pt-1 pl-5 text-white font-weight-bold">{{ comment.content }}</p>
+              <button v-if="userId == comment.userId || userId == 4" class="col-1 p-0 btn" @click.prevent="deleteCom(comment.id)" id="delcom" type="submit"><i class="text-dark fa fa-times"></i></button>
+              <hr class="line w-100 mt-1 mb-0 p-0">
+            </div>
+          </div>
+      </template>
+
+      <!-- SLOT FOR A NEW COMMENT -->
       <template v-slot:EditCom>
-        <div>
-          <form>
+          <form class="container-fluid mt-2">
             <div class="row">
               <textarea id="newComment" class="col-11 form-control-sm mx-auto" v-model.trim="$v.newComment.$model" aria-label="Zone d'un commentaire" placeholder="Commenter"></textarea>
               <div class="error" v-if="!$v.newComment.maxLength">Max. {{ $v.newComment.$params.maxLength.max }} letters</div>
@@ -43,7 +64,6 @@
               <button v-if="userId == post.userId || userId == 4" class="btn btn-light rounded py-2 px-3 mt-2" @click.prevent="deletePost(post.id)" id="delpost" type="submit"><i class="fa fa-trash"></i></button>
             </div>
           </form>
-        </div>
       </template>
 
     </Post>
@@ -223,9 +243,14 @@ export default {
 	overflow: visible;
 	width: 100%;
 }
-#imgpost {
- max-width: 200px;
- max-height: 200px;
+
+#imgProfile {
+    height: 50px;
+    width: 50px;
+}
+
+#userNameComment {
+  font-size: 0.8rem;
 }
 </style>
 
