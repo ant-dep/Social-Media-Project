@@ -1,5 +1,5 @@
 <template>
-  <div class="post">
+  <div class="min-vh-100 d-flex flex-column justify-content-between bg-primary">
     <NavbarPost />
     <Jumbo />
     <CreatePostBtn />
@@ -7,27 +7,25 @@
 
       <!-- POST -->
       <template v-slot:Posts v-if="posts !== null">
-          <div class="container-fluid p-0">
-            <div class="row mx-auto mb-1">
-              <div class="col d-flex justify-content-between align-items-center p-0">
-                  <div>
-                    <img id="imgProfile"
-                        v-if="users.map((user) => {if (user.id === post.userId) return user.imageUrl;}).join('') !== (null || '')"
-                        :src="users.map((user) => {if (user.id === post.userId) return user.imageUrl;}).join('')"
-                        class="rounded-circle"
-                    >
-                    <span class="text-white font-weight-bold px-3 ml-2">{{ post.User.pseudo }}</span>
-                  </div>
-                  <span class="badge text-white align-self-start p-0">{{ post.createdAt.substr(0, 10).split("-").reverse().join("-") }}</span>
-              </div>
+        <div>
+          <div class="col d-flex justify-content-between align-items-center p-0">
+            <div>
+              <img id="imgProfile"
+                v-if="users.map((user) => {if (user.id === post.userId) return user.imageUrl;}).join('') !== (null || '')"
+                :src="users.map((user) => {if (user.id === post.userId) return user.imageUrl;}).join('')"
+                class="rounded-circle"
+              >
+              <span class="text-white font-weight-bold px-3 ml-2">{{ post.User.pseudo }}</span>
             </div>
-            <div class="row mx-auto">
-              <div class="col-11 card my-3 py-2 mx-auto">
-                {{ post.content }}
-                <b-img-lazy v-if="post.imageUrl" :src="post.imageUrl" fluid-grow class="rounded mx-auto pt-1" alt="responsive image"></b-img-lazy>
-              </div>
+            <span class="badge text-white align-self-start p-0">{{ post.createdAt.substr(0, 10).split("-").reverse().join("-") }}</span>
+          </div>
+          <div class="row mx-auto">
+            <div class="col-11 card my-3 py-2 mx-auto">
+              {{ post.content }}
+              <b-img-lazy v-if="post.imageUrl" :src="post.imageUrl" fluid-grow class="rounded mx-auto pt-1" alt="responsive image"></b-img-lazy>
             </div>
             <hr class="line w-100 mb-1">
+          </div>
         </div>
       </template>
 
@@ -109,56 +107,56 @@ export default {
   },
   async created() {
 
-    // USERS
+    // GET ALL USERS
     await axios
-    .get('http://localhost:3000/api/users', {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": 'Bearer ' + localStorage.getItem('token')
-      }
-    })
-    .then((response) => {
-      this.users = response.data;
-      console.log(response);
-    })
-    .catch(e => {
-      console.log(e + "User inconnu ou Users indisponibles");
-    }),
+            .get('http://localhost:3000/api/users', {
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": 'Bearer ' + localStorage.getItem('token')
+              }
+            })
+            .then((response) => {
+              this.users = response.data;
+              console.log(response);
+            })
+            .catch(e => {
+              console.log(e + "User inconnu ou Users indisponibles");
+            }),
 
 
-    // POSTS
+    // GET ALL POSTS
     await axios
-    .get('http://localhost:3000/api/post', {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        "Authorization": 'Bearer ' + localStorage.getItem('token')
-      }
-    })
-    .then((response) => {
-      this.posts = response.data;
-      console.log(response);
-    })
-    .catch(e => {
-      console.log(e + "User inconnu ou Posts indisponibles");
-      this.$router.push('/login');
-      window.alert('Veuillez vous connecter pour accéder au site')
-    })
+            .get('http://localhost:3000/api/post', {
+              headers: {
+                "Content-Type": "multipart/form-data",
+                "Authorization": 'Bearer ' + localStorage.getItem('token')
+              }
+            })
+            .then((response) => {
+              this.posts = response.data;
+              console.log(response);
+            })
+            .catch(e => {
+              console.log(e + "User inconnu ou Posts indisponibles");
+              this.$router.push('/login');
+              window.alert('Veuillez vous connecter pour accéder au site')
+            })
 
-    // COMMENTS
+    // GET ALL COMMENTS
     await axios
-    .get('http://localhost:3000/api/post/comment', {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": 'Bearer ' + localStorage.getItem('token')
-      }
-    })
-    .then((response) => {
-      this.comments = response.data;
-      console.log(response);
-    })
-    .catch(e => {
-      console.log(e + "User inconnu ou comments indisponibles");
-    })
+            .get('http://localhost:3000/api/post/comment', {
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": 'Bearer ' + localStorage.getItem('token')
+              }
+            })
+            .then((response) => {
+              this.comments = response.data;
+              console.log(response);
+            })
+            .catch(e => {
+              console.log(e + "User inconnu ou comments indisponibles");
+            })
   },
 
   methods: {
@@ -168,6 +166,7 @@ export default {
       return `images/${this.imageUrl}`
     },
 
+    // NEW COMMENT
     async sendCom(id) {
       this.$v.$touch();
       if(this.newComment !== null){
@@ -192,6 +191,7 @@ export default {
       }
     },
 
+    // DELETE COMMENT by id
     deleteCom(id) {
       axios
         .delete('http://localhost:3000/api/post/' + id + '/comment', {
@@ -210,6 +210,7 @@ export default {
         })
     },
 
+    // DELETE POST by id
     deletePost(id) {
       axios
         .delete('http://localhost:3000/api/post/' + id, {

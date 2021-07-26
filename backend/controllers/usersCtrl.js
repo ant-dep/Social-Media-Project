@@ -203,7 +203,7 @@ exports.findAll = (req, res) => {
             function(userFound, done) {
                 if (userFound) {
                     User.findAll({
-                            attributes: ['id', 'pseudo', 'email', 'imageUrl']
+                            attributes: ['id', 'pseudo', 'email', 'imageUrl', 'createdAt']
                         })
                         .then(function(users) {
                             done(users)

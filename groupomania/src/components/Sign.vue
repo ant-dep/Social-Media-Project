@@ -1,6 +1,6 @@
 <template>
     <div class="bg-primary pt-3 pb-5">
-        <div class="card login col-6 col-lg-4 mx-auto bg-white py-4">
+        <div class="card login col-8 col-lg-6 mx-auto bg-white py-4">
             <h1 class="h3 text-secondary mt-3">Créer un compte</h1>
             <form id="form" class="mt-3" @submit.prevent="signup()" method="post" novalidate="true">
                 <div class="form-group form-group-sm" :class="{ 'form-group--error': $v.pseudo.$error }">

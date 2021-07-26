@@ -1,8 +1,8 @@
 <template>
     <div class="container-fluid">
-        <div class="row mx-auto mb-5">
-            <div class="col-8 col-lg-6 mx-auto border rounded bg-primary py-2">
-                <slot name="Users"></slot>
+        <div class="row mx-auto my-2">
+            <div class="col-10 col-md-8 col-lg-6 mx-auto border rounded bg-primary">
+                <slot name="AllUsers"></slot>
             </div>
         </div>
     </div>
@@ -10,7 +10,7 @@
 
 <script>
 export default {
-    name: "AllProfiles",
+    name: "AllUsers",
 
     data() {
         return {}

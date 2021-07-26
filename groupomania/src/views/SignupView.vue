@@ -1,6 +1,6 @@
 /*html*/
 <template>
-  <div class="signup">
+  <div class="min-vh-100 d-flex flex-column justify-content-between bg-primary">
     <Navbar />
     <Sign />
     <Footer />

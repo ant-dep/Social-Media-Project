@@ -1,5 +1,5 @@
 <template>
-  <div class="home position-relative">
+  <div class="min-vh-100 d-flex flex-column justify-content-between position-relative bg-primary">
     <Navbar />
     <HomePage />
     <Log />

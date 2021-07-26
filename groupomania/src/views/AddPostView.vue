@@ -1,5 +1,5 @@
 <template>
-  <div class="post">
+  <div class="min-vh-100 d-flex flex-column justify-content-between bg-primary">
     <NavbarPost />
     <SendPost />
     <Footer />

@@ -1,5 +1,5 @@
 <template>
-  <div class="post">
+  <div class="min-vh-100 d-flex flex-column justify-content-between bg-primary">
     <NavbarPost />
     <Jumbo />
     <Post />
@@ -14,7 +14,7 @@ import Post from '@/components/SendPost.vue'
 import Footer from '@/components/Footer.vue'
 
 export default {
-  name: 'AddPost',
+  name: 'Post',
   components: {
     NavbarPost, Jumbo, Post, Footer
   }

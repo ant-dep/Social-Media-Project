@@ -1,13 +1,20 @@
 <template>
     <div class="container-fluid">
+        <div class="card col-8 mx-auto">
             <div class="row">
-                <div class="col-8 mx-auto">
-                    <h1 class="my-4">{{ user.pseudo}}</h1>
+                <div class="col-8 mx-auto my-2">
+                    <div class="d-flex justify-content-center align-items-center">
+                        <b-img id="imgProfile" :src="user.imageUrl" fluid></b-img>
+                        <h1 class="ml-2 align-self-end">{{ user.pseudo}}</h1>
+                    </div>
+                    <hr class="line w-75">
                 </div>
-                <div class="col-8 mx-auto">
-                    <b-img id="imgProfile" :src="user.imageUrl" fluid></b-img>
-                    <div>
-                        <b-button v-b-toggle.newPassword class="btn btn-light text-secondary font-weight-bold mt-3">Modifier mes infos</b-button>
+            </div>
+
+            <div class="form-group mt-4">
+                <div class="row">
+                    <div class="col-10 mx-auto mb-3">
+                        <b-link v-b-toggle.newPassword class="btn bg-groupomania font-weight-bold px-2 mr-2">Modifier mes infos</b-link>
                         <b-collapse id="newPassword">
                             <div class="card col col-lg-8 mx-auto bg-white py-4">
                                 <h1 class="h3 text-secondary mt-3">Modifier mes infos</h1>
@@ -61,27 +68,18 @@
                                 </form>
                             </div>
                         </b-collapse>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group mt-4">
-                <div class="row">
-                    <div class="col-10 mx-auto">
-                        <b-link class="btn bg-groupomania mr-5 font-weight-bold mb-5 px-5" to="Allpost">Accueil</b-link>
-                        <b-link class="btn bg-groupomania font-weight-bold mb-5 px-3" to="Addpost">Rédiger un post</b-link>
-                        <div>
-                            <b-link v-if="isActive" class="btn btn-light text-secondary font-weight-bold" to="AllProfiles">Consulter les profiles</b-link>
-                        </div>
+                        <b-link class="btn bg-groupomania font-weight-bold px-3" to="Addpost">Rédiger un post</b-link>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-8 mx-auto">
-                        <b-link class="delete badge badge-light font-weight-bold py-1 my-5" @click.prevent="deleteUser"><small>Supprimer mon compte</small></b-link>
+                    <div class="col-8 mx-auto my-5">
+                        <b-link v-if="isActive" class="delete badge badge-light font-weight-bold py-1 mr-2" to="AllProfiles"><small>Consulter les profiles</small></b-link>
+                        <b-link class="delete badge badge-light font-weight-bold py-1 " @click.prevent="deleteUser"><small>Supprimer mon compte</small></b-link>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 </template>
 
 <script>
