@@ -53,7 +53,6 @@ export default {
             pseudo: localStorage.getItem("pseudo")
         }
     },
-
     validations: {
         content: {
             required, maxLength: maxLength(140)

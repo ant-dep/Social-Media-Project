@@ -1,5 +1,5 @@
 <template>
-  <div class="min-vh-100 d-flex flex-column justify-content-between bg-primary">
+  <div class="min-vh-100 d-flex flex-column justify-content-between ">
     <NavbarPost />
     <Jumbo />
     <CreatePostBtn />
@@ -58,6 +58,11 @@
               <div class="error" v-if="!$v.newComment.maxLength">Max. {{ $v.newComment.$params.maxLength.max }} letters</div>
             </div>
             <div>
+              <button @click.prevent="sendLike(post.id)"
+                      id="sendlike" type="submit" class="btn btn-light rounded p-2 mt-2 mr-2" aria-label="Publication d'un like">
+                      <b-icon-hand-thumbs-up></b-icon-hand-thumbs-up>
+              </button>
+              <span v-if="post.likes.length > 0">{{likes.filter((like) => {return like.postId == post.id;}).length}}</span>
               <button class="btn btn-light rounded p-2 mt-2 mr-2" @click.prevent="sendCom(post.id)" id="sendcom" type="submit" aria-label="Publication d'un commentaire">Commenter</button>
               <button v-if="userId == post.userId || userId == 4" class="btn btn-light rounded py-2 px-3 mt-2" @click.prevent="deletePost(post.id)" id="delpost" type="submit"><i class="fa fa-trash"></i></button>
             </div>
@@ -164,6 +169,21 @@ export default {
     postImage() {
       console.log(this.post.imageUrl);
       return `images/${this.imageUrl}`
+    },
+
+    // NEW LIKE
+    async sendLike(id) {
+        await axios
+          .post('http://localhost:3000/api/post/' + id + '/vote/like', {
+            userId: this.userId
+          })
+          .then((res) => {
+            console.log(res);
+            this.$router.go()
+          })
+          .catch(() => {
+                console.log("Impossible d'éditer le post, une erreur est survenue");
+          })
     },
 
     // NEW COMMENT

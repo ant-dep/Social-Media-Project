@@ -3,7 +3,8 @@ const multer = require('multer');
 const MIME_TYPES = {
     'image/jpg': 'jpg',
     'image/jpeg': 'jpg',
-    'image/png': 'png'
+    'image/png': 'png',
+    'image/.gif': 'gif'
 };
 // Delimit files size
 const maxSize = 1 * 20000 * 20000;

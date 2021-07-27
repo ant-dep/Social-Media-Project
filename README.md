@@ -2,23 +2,34 @@ Projet 7 du parcours Développeur Web OC
 Créer un réseau social d'entreprise
 
 Technologies utilisées:
-Vue JS
-Booststrap
-Node JS
-Express
-Sequelize
-MySQL via Workbench, MAMP et DBeaver
+
+-> Vue JS avec Booststrap
+-> Node JS avec Express, Sequelize
+-> MySQL avec Workbench, MAMP et DBeaver
 
 ####  FRONTEND  ####
 
-Se positionner sur le dossier Groupomania et saisir:
-npm run serve
+Sur le dossier Groupomania avec un terminal:
+    npm install
+    npm run serve
 
 ####  BACKEND  ####
 
-Se positionner sur le dossier backend et saisir:
-npm install
-nodemon server
+Sur le dossier backend avec un autre terminal:
+    npm install
+    nodemon server
+
+####  MYSQL  ####
+
+Utiliser un serveur de Base de Données type MAMP/XAMPP
+Utiliser Workbench pour visualiser et lier les modèles de tables
+Créer les 3 bases de données nécessaires :
+    -> groupomania_test / groupomania_developement / groupomania_production
+
+Utiliser Sequelize pour créer les tables directement via Node.JS
+    -> sequelize db:create
+    -> sequelize db:migrate
+
 
 Contenu du dossier .env pour la connexion MYSQL:
 DB_HOST= 'localhost',

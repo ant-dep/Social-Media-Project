@@ -17,7 +17,7 @@
                 <span class="text-white font-weight-bold px-3">{{ user.email }}</span>
                 <span class="text-white font-weight-bold px-3">{{ user.createdAt.substr(0, 10).split("-").reverse().join("-") }}</span>
 
-                <button class="delete badge badge-danger text-black font-weight-bold py-1" @click.prevent="deleteUser(user.id)">Bannir</button>
+                <button v-if="user.id !== 4" class="delete badge badge-danger text-black font-weight-bold py-1" @click.prevent="deleteUser(user.id)">Bannir</button>
             </div>
         </template>
     </AllProfiles>

@@ -254,7 +254,7 @@ exports.update = (req, res, next) => {
                     bcrypt.hash(userFound.password, 12)
                         .then(hash => {
                             userFound.update({
-                                    pseudo: (pseudo ? pseudo : userFound.pseudo),
+                                    pseudo: (pseudo ? req.body.pseudo : userFound.pseudo),
                                     email: (email ? email : userFound.email),
                                     password: hash,
                                     imageUrl: (imageUrl ? imageUrl : userFound.imageUrl)

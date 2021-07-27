@@ -1,5 +1,8 @@
-const models = require('../models');
+const db = require("../models/index");
 const jwt = require('../middleware/auth');
+const User = db.user;
+const Post = db.post;
+const Like = db.like;
 const asyncLib = require('async'); // to warp functions within a Waterfall
 
 // Constants
@@ -13,12 +16,9 @@ module.exports = {
     // ----------  LIKE ----------  //
 
     likePost: function(req, res) {
-        // Getting auth header
-        let headerAuth = req.headers['authorization'];
-        let userId = jwt.getUserId(headerAuth);
 
-        // Params
-        const postId = parseInt(req.params.postId);
+        const userId = req.body.userId;
+        const postId = parseInt(req.params.id);
 
         // Checking if post id is valid
         if (postId <= 0) {
@@ -29,7 +29,7 @@ module.exports = {
 
             // 1. Checking if post exists
             function(done) {
-                models.Post.findOne({
+                Post.findOne({
                         where: { id: postId }
                     })
                     .then(function(postFound) {
@@ -44,7 +44,7 @@ module.exports = {
             function(postFound, done) {
                 if (postFound) {
                     // Get the user object
-                    models.User.findOne({
+                    User.findOne({
                             where: { id: userId }
                         })
                         .then(function(userFound) {
@@ -62,7 +62,7 @@ module.exports = {
             function(postFound, userFound, done) {
                 if (userFound) {
                     // Checks if inside Like table, there is the user and the post ids
-                    models.Like.findOne({
+                    Like.findOne({
                             where: {
                                 userId: userId,
                                 postId: postId
@@ -134,8 +134,8 @@ module.exports = {
     // ----------  DISLIKE ----------  //
 
     dislikePost: function(req, res) {
-        let headerAuth = req.headers['authorization'];
-        let userId = jwt.getUserId(headerAuth);
+        const headerAuth = req.headers['authorization'];
+        const userId = jwt.getUserId(headerAuth);
         const postId = parseInt(req.params.postId);
 
         if (postId <= 0) {
@@ -145,7 +145,7 @@ module.exports = {
         // The same than LIKE but reverse
         asyncLib.waterfall([
             function(done) {
-                models.Post.findOne({
+                Post.findOne({
                         where: { id: postId }
                     })
                     .then(function(postFound) {
@@ -157,7 +157,7 @@ module.exports = {
             },
             function(postFound, done) {
                 if (postFound) {
-                    models.User.findOne({
+                    User.findOne({
                             where: { id: userId }
                         })
                         .then(function(userFound) {
@@ -172,7 +172,7 @@ module.exports = {
             },
             function(postFound, userFound, done) {
                 if (userFound) {
-                    models.Like.findOne({
+                    Like.findOne({
                             where: {
                                 userId: userId,
                                 postId: postId
