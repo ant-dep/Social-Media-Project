@@ -1,7 +1,7 @@
 <template>
     <div class="container-fluid">
-        <div class="row mx-auto my-2">
-            <div class="col-10 col-md-8 col-lg-6 mx-auto border rounded bg-primary">
+        <div class="row mx-auto">
+            <div class="col border rounded bg-primary">
                 <slot name="AllUsers"></slot>
             </div>
         </div>

@@ -1,23 +1,28 @@
 <template>
-  <div class="min-vh-100 d-flex flex-column justify-content-between bg-primary">
+  <div class="min-vh-100 d-flex flex-column justify-content-between">
     <NavbarPost />
     <h1 class="my-2">Liste des utilisateurs</h1>
     <hr class="line w-100 mt-1 mb-0 p-0">
+    <div class="row mx-3 py-2 border rounded bg-primary">
+            <span class="col-1 text-white font-weight-bold px-3 my-auto">ID</span>
+            <span class="col-1 text-white font-weight-bold px-3 my-auto">PHOTO</span>
+            <span class="col-1 text-white font-weight-bold px-3 my-auto">PSEUDO</span>
+            <span class="col-5 text-white font-weight-bold px-3 my-auto">EMAIL</span>
+            <span class="col-1 text-white font-weight-bold px-3 my-auto">ADMIN</span>
+            <span class="col-2 text-white font-weight-bold px-3 my-auto">CRÉÉ LE</span>
+        </div>
 
     <AllProfiles v-for="user in users" :key="user.id">
         <template v-slot:AllUsers>
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="text-white font-weight-bold px-3">{{ user.id }}</span>
-                <img id="imgProfile"
-                    v-if="users.map((user) => {if (user.id === user.userId) return user.imageUrl;}).join('') !== (null || '')"
-                    :src="users.map((user) => {if (user.id === user.userId) return user.imageUrl;}).join('')"
-                    class="rounded-circle"
-                 >
-                <span class="text-white font-weight-bold px-3">{{ user.pseudo }}</span>
-                <span class="text-white font-weight-bold px-3">{{ user.email }}</span>
-                <span class="text-white font-weight-bold px-3">{{ user.createdAt.substr(0, 10).split("-").reverse().join("-") }}</span>
+            <div class="row">
+                <span class="col-1 text-white font-weight-bold px-3 my-auto">{{ user.id }}</span>
+                <img id="imgProfile" :src="user.imageUrl" class="col-1">
+                <span class="col-1 text-white font-weight-bold px-3 my-auto">{{ user.pseudo }}</span>
+                <span class="col-5 text-white font-weight-bold px-3 my-auto">{{ user.email }}</span>
+                <span class="col-1 text-white font-weight-bold px-3 my-auto">{{ user.isAdmin }}</span>
+                <span class="col-2 text-white font-weight-bold px-3 my-auto">{{ user.createdAt.substr(0, 10).split("-").reverse().join("-") }}</span>
 
-                <button v-if="user.id !== 4" class="delete badge badge-danger text-black font-weight-bold py-1" @click.prevent="deleteUser(user.id)">Bannir</button>
+                <button class="col-1 delete badge badge-danger text-black font-weight-bold py-1" @click.prevent="deleteUser(user.id)">Bannir</button>
             </div>
         </template>
     </AllProfiles>
@@ -40,6 +45,7 @@ export default {
 
     data() {
         return {
+            userId: parseInt(localStorage.getItem('userId')),
             users: [],
             user: {
                 id: "",
@@ -47,6 +53,7 @@ export default {
                 email: "",
                 imageUrl: "",
                 createdAt: "",
+                isAdmin: ""
             },
         }
     },
@@ -91,6 +98,12 @@ export default {
 </script>
 
 <style scoped>
+
+#imgProfile {
+    border-radius: 50%;
+    height: 60px;
+    width: 60px;
+}
 
 </style>
 

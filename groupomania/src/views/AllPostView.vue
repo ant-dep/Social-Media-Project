@@ -1,7 +1,10 @@
 <template>
-  <div class="min-vh-100 d-flex flex-column justify-content-between ">
+  <div class="min-vh-100 d-flex flex-column justify-content-between">
     <NavbarPost />
     <Jumbo />
+      <b-alert v-if="errorDeletePost" show dismissible variant="danger">Impossible de supprimé votre post. Veuillez contacter un administrateur"</b-alert>
+      <b-alert v-if="errorComPost" show dismissible variant="danger">Impossible de commenter</b-alert>
+      <b-alert v-if="confirmComPost" show dismissible variant="success">Commentaire ajouté</b-alert>
     <CreatePostBtn />
     <Post v-for="post in posts" :key="post.id" >
 
@@ -10,9 +13,7 @@
         <div>
           <div class="col d-flex justify-content-between align-items-center p-0">
             <div>
-              <img id="imgProfile"
-                v-if="users.map((user) => {if (user.id === post.userId) return user.imageUrl;}).join('') !== (null || '')"
-                :src="users.map((user) => {if (user.id === post.userId) return user.imageUrl;}).join('')"
+              <img id="imgProfile" :src="post.User.imageUrl"
                 class="rounded-circle"
               >
               <span class="text-white font-weight-bold px-3 ml-2">{{ post.User.pseudo }}</span>
@@ -35,18 +36,13 @@
               :key="comment.id"
               class="container-fluid"
           >
-            <div v-if="comments.postId == posts.id" class="row comment-area py-1">
-              <div>
-                <img v-if="users.map((user) => {if (user.id === comment.userId) return user.imageUrl;}).join('') !== (null || '')"
-                    :src="users.map((user) => {if (user.id === comment.userId) return user.imageUrl;}).join('')"
-                    class="imgComment"
-                >
-                <span id="userNameComment" class="text-white px-2">{{ users.map((user) => {if (user.id === comment.userId) return user.pseudo;}).join("") }}</span>
-              </div>
-              <p class="col-11 d-flex justify-content-start mb-0 pt-1 pl-5 text-white font-weight-bold">{{ comment.content }}</p>
-              <button v-if="userId == comment.userId || userId == 4" class="col-1 p-0 btn" @click.prevent="deleteCom(comment.id)" id="delcom" type="submit"><i class="text-dark fa fa-times"></i></button>
-              <hr class="line w-100 mt-1 mb-0 p-0">
+            <div v-if="comments.postId == posts.id" class="row d-flex justify-content-between align-items-center comment-area py-1">
+                <img :src="comment.User.imageUrl" class="imgComment align-self-start">
+                <span id="userNameComment" class="align-self-start text-white px-2">{{ comment.User.pseudo }}</span>
+                <p class="col-8 text-left mb-0 pt-1 text-white font-weight-bold">{{ comment.content }}</p>
+                <button v-if="userId == comment.userId || currentUser.isAdmin == 1" class="col-1 p-0 btn" @click.prevent="deleteCom(comment.id)" id="delcom" type="submit"><i class="text-dark fa fa-times"></i></button>
             </div>
+                <hr class="line w-100 mt-1 mb-0 p-0">
           </div>
       </template>
 
@@ -58,13 +54,8 @@
               <div class="error" v-if="!$v.newComment.maxLength">Max. {{ $v.newComment.$params.maxLength.max }} letters</div>
             </div>
             <div>
-              <button @click.prevent="sendLike(post.id)"
-                      id="sendlike" type="submit" class="btn btn-light rounded p-2 mt-2 mr-2" aria-label="Publication d'un like">
-                      <b-icon-hand-thumbs-up></b-icon-hand-thumbs-up>
-              </button>
-              <span v-if="post.likes.length > 0">{{likes.filter((like) => {return like.postId == post.id;}).length}}</span>
-              <button class="btn btn-light rounded p-2 mt-2 mr-2" @click.prevent="sendCom(post.id)" id="sendcom" type="submit" aria-label="Publication d'un commentaire">Commenter</button>
-              <button v-if="userId == post.userId || userId == 4" class="btn btn-light rounded py-2 px-3 mt-2" @click.prevent="deletePost(post.id)" id="delpost" type="submit"><i class="fa fa-trash"></i></button>
+              <button class="btn btn-light rounded py-1 px-2 mt-2 mr-2" @click.prevent="sendCom(post.id)" id="sendcom" type="submit" aria-label="Publication d'un commentaire">Commenter</button>
+              <button v-if="userId == post.userId || currentUser.isAdmin == 1" class="btn btn-light rounded py-1 px-2 mt-2" @click.prevent="deletePost(post.id)" id="delpost" type="submit"><i class="fa fa-trash"></i></button>
             </div>
           </form>
       </template>
@@ -92,18 +83,22 @@ export default {
   data() {
     return {
       token: localStorage.getItem('token'),
+      userId: parseInt(localStorage.getItem("userId")),
       pseudo: localStorage.getItem('pseudo'),
-      users: [],
+      isAdmin: localStorage.getItem('isAdmin'),
       posts: [],
       comments: [],
-      userId: localStorage.getItem("userId"),
-      isAdmin: 1,
+      currentUser: [],
       user: {
         pseudo: "",
         imageUrl: "",
-        id: ""
+        id: "",
+        isAdmin: "",
       },
       newComment: "",
+      errorDeletePost: false,
+      errorComPost: false,
+      confirmComPost: false,
     }
   },
 
@@ -112,29 +107,28 @@ export default {
   },
   async created() {
 
-    // GET ALL USERS
+    // GET CURRENT USER
     await axios
-            .get('http://localhost:3000/api/users', {
-              headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Authorization": 'Bearer ' + localStorage.getItem('token')
-              }
-            })
-            .then((response) => {
-              this.users = response.data;
-              console.log(response);
-            })
-            .catch(e => {
-              console.log(e + "User inconnu ou Users indisponibles");
-            }),
-
+    .get('http://localhost:3000/api/users/profile', {
+    headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": "Bearer " + this.token,
+    },
+    })
+    .then((response) => {
+        this.currentUser = response.data
+        console.log(response);
+    })
+    .catch(e => {
+        console.log(e + "User inconnu");
+    })
 
     // GET ALL POSTS
     await axios
             .get('http://localhost:3000/api/post', {
               headers: {
                 "Content-Type": "multipart/form-data",
-                "Authorization": 'Bearer ' + localStorage.getItem('token')
+                "Authorization": 'Bearer ' + this.token
               }
             })
             .then((response) => {
@@ -152,15 +146,15 @@ export default {
             .get('http://localhost:3000/api/post/comment', {
               headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "Authorization": 'Bearer ' + localStorage.getItem('token')
+                "Authorization": 'Bearer ' + this.token
               }
             })
             .then((response) => {
               this.comments = response.data;
               console.log(response);
             })
-            .catch(e => {
-              console.log(e + "User inconnu ou comments indisponibles");
+            .catch(err => {
+              console.log(err + "User inconnu ou comments indisponibles");
             })
   },
 
@@ -171,44 +165,26 @@ export default {
       return `images/${this.imageUrl}`
     },
 
-    // NEW LIKE
-    async sendLike(id) {
-        await axios
-          .post('http://localhost:3000/api/post/' + id + '/vote/like', {
-            userId: this.userId
-          })
-          .then((res) => {
-            console.log(res);
-            this.$router.go()
-          })
-          .catch(() => {
-                console.log("Impossible d'éditer le post, une erreur est survenue");
-          })
-    },
-
     // NEW COMMENT
     async sendCom(id) {
       this.$v.$touch();
-      if(this.newComment !== null){
 
         await axios
           .post('http://localhost:3000/api/post/' + id + '/comment', {
             headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            content: this.newComment,
-            userId: parseInt(localStorage.getItem('userId')),
-            postId: id
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": 'Bearer ' + this.token
+              },
+            content: this.newComment
           })
           .then((res) => {
             console.log(res);
-            alert("Commentaire posté");
-            this.$router.go()
+            this.confirmComPost = true
           })
-          .catch(() => {
-                console.log("Impossible d'éditer le post, une erreur est survenue");
+          .catch((err) => {
+            this.errorComPost = true
+            console.log(err);
           })
-      }
     },
 
     // DELETE COMMENT by id
@@ -217,7 +193,7 @@ export default {
         .delete('http://localhost:3000/api/post/' + id + '/comment', {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
-            "Authorization": 'Bearer ' + localStorage.getItem('token')
+            "Authorization": 'Bearer ' + this.token
           }
         })
         .then(response => {
@@ -225,8 +201,9 @@ export default {
           console.log(response);
           this.$router.go()
         })
-        .catch(error => {
-          window.alert(error);
+        .catch((err) => {
+          alert("Impossible de supprimé votre commentaire. Veuillez contacter un administrateur")
+          console.log(err);
         })
     },
 
@@ -236,16 +213,16 @@ export default {
         .delete('http://localhost:3000/api/post/' + id, {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
-            "Authorization": 'Bearer ' + localStorage.getItem('token')
+            "Authorization": 'Bearer ' + this.token
           }
         })
         .then(response => {
-          alert("Votre post a été supprimé !")
           console.log(response);
           this.$router.go()
         })
-        .catch(error => {
-          window.alert(error);
+        .catch((err) => {
+          this.errorDeletePost = true
+          console.log(err);
         })
     }
   }

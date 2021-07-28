@@ -12,9 +12,10 @@
                                         <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555zM0 4.697v7.104l5.803-3.558L0 4.697zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757zm3.436-.586L16 11.801V4.697l-5.803 3.546z"/>
                                     </svg>
                                 </span>
-                                <input id="email" class="col-7 col-lg-6 form-control form-control-sm" name="email" type="email" placeholder="Email" v-model.trim="$v.email.$model" @change="activatedBtn()">
-                            </div>
+                                <input id="email" class="col-7 col-lg-6 form-control form-control-sm" name="email" type="email" placeholder="Email" v-model.trim="$v.email.$model" @change="activatedBtn()">                            </div>
                         </div>
+                        <span class="badge badge-danger" v-if="!$v.email.email">Un email est demandé</span>
+
                     </div>
                     <div class="form-group form-group-sm" :class="{ 'form-group--error': $v.password.$error }">
                         <div class="col mx-auto position-relative">
@@ -32,6 +33,7 @@
                     </div>
                     <button class="btn btn-dark btn-sm mt-3" :disabled="isActive" type="submit" @click.prevent="login">Connexion</button>
                 </form>
+                <b-alert v-if="errorAlert" show dismissible variant="danger" class="col-10 mx-auto mt-5">Identifiants incorrects</b-alert>
                 <div class="mt-5 pt-5">
                     <p> Pas encore inscrit ? Créez votre compte dès aujourd'hui !</p>
                     <button class="btn btn-dark btn-sm" @click.prevent="goSignin" >Inscription</button>
@@ -42,7 +44,7 @@
 
 
 <script>
-import {required,minLength} from "vuelidate/lib/validators";
+import {email,required,minLength} from "vuelidate/lib/validators";
 import axios from "axios";
 
 
@@ -53,13 +55,15 @@ data() {
         email: "",
         password: "",
         submited: false,
-        isActive: true
+        isActive: true,
+        errorAlert: false
     }
     },
 
 validations: {
     email: {
-        required,
+        email,
+        required
     },
     password: {
         required,
@@ -84,13 +88,12 @@ methods:{
         .then((res) => {
             localStorage.setItem("token", res.data.token)
             localStorage.setItem("userId", res.data.userId)
-            console.log(res);
+            localStorage.setItem("isAdmin", res.data.isAdmin)
             alert("Bienvenue ! Vous êtes connecté ! ");
             this.$router.push('/allpost');
         })
-        .catch(error => {
-            console.log("Identifiants invalides !" + (error));
-            window.alert('Identifiants / Mot de passe incorrects')
+        .catch(() => {
+            this.errorAlert = true
         })
     },
     goSignin(){

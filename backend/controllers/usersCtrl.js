@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const jwt = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
 const db = require("../models/index");
 const User = db.user;
 
@@ -56,7 +56,7 @@ exports.signup = async(req, res, next) => {
                         done(null, userFound, bcryptedPassword);
                     });
                 } else {
-                    return res.status(409).json({ 'error': 'user already exist' });
+                    return res.status(409).json({ error: 'user already exist' });
                 }
             },
 
@@ -142,9 +142,16 @@ exports.login = (req, res, next) => {
         // 4. Return userId with a unique token
     ], function(userFound) {
         if (userFound) {
-            return res.status(201).json({
-                'userId': userFound.id,
-                'token': jwt.generateTokenForUser(userFound)
+            return res.status(200).json({
+                userId: userFound.id,
+                // creates a token with the jwt method sign
+                token: jwt.sign({ userId: userFound.id },
+                    // must be a long non specific and random characters
+                    'RANDOM_TOKEN_SECRET',
+                    // make the token expires after 24h
+                    { expiresIn: '8h' }
+                ),
+                isAdmin: userFound.isAdmin
             });
         } else {
             return res.status(500).json({ 'error': 'cannot log on user' });
@@ -154,43 +161,32 @@ exports.login = (req, res, next) => {
 
 
 // ----------  FIND BY PRIMARY KEY (READ - sequelize)  ----------  //
-exports.findByPk = (req, res, next) => {
-    // Getting auth header
-    const headerAuth = req.headers['authorization'];
-    const userId = jwt.getUserId(headerAuth);
-
-    // Checks if this user get a valid id
-    if (userId < 0) {
-        return res.status(400).json({ 'error': 'wrong token' });
-    }
+exports.findOne = (req, res, next) => {
 
     // Getting user infos linked to his id
     User.findOne({
-        attributes: ['id', 'email', 'pseudo', 'imageUrl'],
-        where: { id: userId }
-    }).then(function(user) {
+        attributes: ['id', 'email', 'pseudo', 'imageUrl', 'isAdmin'],
+        where: { id: req.body.userId }
+    }).then((user) => {
         if (user) {
             res.status(201).json(user); // confirm if found
         } else {
             res.status(404).json({ 'error': 'user not found' });
         }
-    }).catch(function(err) {
+    }).catch((err) => {
         res.status(500).json({ 'error': 'cannot fetch user' });
     });
 };
 
 // ----------  READ  ----------  //
 exports.findAll = (req, res) => {
-    // Getting auth header
-    const headerAuth = req.headers['authorization'];
-    const userId = jwt.getUserId(headerAuth);
 
     asyncLib.waterfall([
 
             // 1. Check if the user exists
             function(done) {
                 User.findOne({
-                        where: { id: userId }
+                        where: { id: req.body.userId }
                     })
                     .then(function(userFound) {
                         done(null, userFound);
@@ -203,7 +199,7 @@ exports.findAll = (req, res) => {
             function(userFound, done) {
                 if (userFound) {
                     User.findAll({
-                            attributes: ['id', 'pseudo', 'email', 'imageUrl', 'createdAt']
+                            attributes: ['id', 'pseudo', 'email', 'imageUrl', 'isAdmin', 'createdAt']
                         })
                         .then(function(users) {
                             done(users)
@@ -228,90 +224,88 @@ exports.findAll = (req, res) => {
 
 
 // ----------  UPDATE  ----------  //
-exports.update = (req, res, next) => {
-    // Getting auth header
-    const headerAuth = req.headers['authorization'];
-    const userId = jwt.getUserId(headerAuth);
+exports.update = async(req, res, next) => {
     // Params
     const pseudo = req.body.pseudo;
     const email = req.body.email;
     const password = req.body.password;
     const imageUrl = req.body && req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
 
-    asyncLib.waterfall([
-            function(done) {
-                User.findOne({
-                        where: { id: userId }
-                    }).then(function(userFound) {
-                        done(null, userFound);
-                    })
-                    .catch(function(err) {
-                        return res.status(500).json({ 'error': 'unable to verify user' });
-                    });
-            },
-            function(userFound, done) {
-                if (userFound && req.body.password) {
-                    bcrypt.hash(userFound.password, 12)
-                        .then(hash => {
-                            userFound.update({
-                                    pseudo: (pseudo ? req.body.pseudo : userFound.pseudo),
-                                    email: (email ? email : userFound.email),
-                                    password: hash,
-                                    imageUrl: (imageUrl ? imageUrl : userFound.imageUrl)
-                                })
-                                .then(function() {
-                                    done(userFound);
-                                })
-                                .catch(function(err) {
-                                    res.status(500).json({ 'error': 'cannot update user' });
-                                })
-                        })
-                } else if (userFound) {
-                    userFound.update({
-                            pseudo: (pseudo ? pseudo : userFound.pseudo),
-                            email: (email ? email : userFound.email),
-                            imageUrl: (imageUrl ? imageUrl : userFound.imageUrl),
-                            password: userFound.password,
-                        })
-                        .then(function() {
-                            done(userFound);
+    const emailExists = await User.findOne({ where: { email: email } });
+    const pseudoExists = await User.findOne({ where: { pseudo: pseudo } });
+
+    if (emailExists != null || pseudoExists !== null) {
+        return res.status(406).json({ error: "Email already registered" })
+    } else {
+
+        asyncLib.waterfall([
+                function(done) {
+                    User.findOne({
+                            where: { id: req.body.userId }
+                        }).then(function(userFound) {
+                            done(null, userFound);
                         })
                         .catch(function(err) {
-                            res.status(500).json({ 'error': 'cannot update user' });
-                        })
+                            return res.status(500).json({ 'error': 'unable to verify user' });
+                        });
+                },
+
+                function(userFound, done) {
+                    if (userFound && password !== null) {
+                        bcrypt.hash(password, 12)
+                            .then(hash => {
+                                userFound.update({
+                                        pseudo: (pseudo ? pseudo : userFound.pseudo),
+                                        email: (email ? email : userFound.email),
+                                        password: hash,
+                                        imageUrl: (imageUrl ? imageUrl : userFound.imageUrl)
+                                    })
+                                    .then(function() {
+                                        done(userFound);
+                                    })
+                                    .catch(function(err) {
+                                        res.status(500).json({ 'error': 'cannot update user' });
+                                    })
+                            })
+                    } else if (userFound && password == null) {
+                        userFound.update({
+                                pseudo: (pseudo ? pseudo : userFound.pseudo),
+                                email: (email ? email : userFound.email),
+                                imageUrl: (imageUrl ? imageUrl : userFound.imageUrl),
+                                password: userFound.password,
+                            })
+                            .then(function() {
+                                done(userFound);
+                            })
+                            .catch(function(err) {
+                                res.status(500).json({ 'error': 'cannot update user' });
+                            })
+                    } else {
+                        res.status(404).json({ 'error': 'user not found' });
+                    }
+                },
+            ],
+            function(userFound) {
+                if (userFound) {
+                    return res.status(201).json(userFound);
                 } else {
-                    res.status(404).json({ 'error': 'user not found' });
+                    return res.status(500).json({ 'error': 'cannot update user profile' });
                 }
-            },
-        ],
-        function(userFound) {
-            if (userFound) {
-                return res.status(201).json(userFound);
-            } else {
-                return res.status(500).json({ 'error': 'cannot update user profile' });
-            }
-        });
+            });
+    }
 };
 
 
 // ----------  DELETE  ----------  //
 exports.delete = (req, res, next) => {
 
-    // Getting auth header
-    const headerAuth = req.headers['authorization'];
-    const userId = jwt.getUserId(headerAuth);
-
-    User.findOne({
-            where: { id: req.params.id }
-        })
-        .then(user => {
-            if (user) {
-                User.destroy({
-                        where: { id: req.params.id }
-                    })
-                    .then(() => res.status(200).json({ message: 'Utilisateur supprimé' })) // send confirmation if done
-                    .catch(error => res.status(500).json({ 'error': 'cannot delete user' }));
+    // Soft-deletion modifying the post the ad a timestamp to deletedAt
+    Post
+        .destroy({
+            where: {
+                id: req.params.id
             }
         })
-        .catch(error => res.status(500).json({ 'error': 'cannot find user' }));
+        .then(() => res.status(200).json({ message: 'Utilisateur supprimé' })) // send confirmation if done
+        .catch(error => res.status(500).json({ 'error': 'cannot delete user' }));
 };

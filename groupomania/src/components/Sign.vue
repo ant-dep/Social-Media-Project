@@ -2,7 +2,7 @@
     <div class="bg-primary pt-3 pb-5">
         <div class="card col-8 col-lg-4 mx-auto bg-white py-4">
             <h1 class="h3 text-secondary mt-3">Créer un compte</h1>
-            <form id="form" class="mt-3" @submit.prevent="signup()" method="post" novalidate="true">
+            <form id="form" class="mt-3 mb-4" @submit.prevent="signup()" method="post" novalidate="true">
                 <div class="form-group form-group-sm" :class="{ 'form-group--error': $v.pseudo.$error }">
                     <div class="col mx-auto position-relative">
                         <label for="pseudo">Pseudo</label>
@@ -47,7 +47,12 @@
                 </div>
                 <button class="btn btn-dark btn-sm mt-3" type="submit" @click.prevent="signup" :disabled="isActive">S'inscrire</button>
             </form>
-            <div class="mt-5 pt-5">
+            <div>
+                <b-alert v-if="this.alert == 400" show dismissible variant="danger">Veuillez respecter le format des champs</b-alert>
+                <b-alert v-if="this.alert == 409" show dismissible variant="danger">Pseudo ou Email déjà utilisé</b-alert>
+                <b-alert v-if="this.alert == 500" show dismissible variant="danger">Une erreur est survenue</b-alert>
+            </div>
+            <div class="pt-5">
                     <p> Déjà inscrit ? Vous connectez ici !</p>
                     <button class="btn btn-dark btn-sm" @click.prevent="goLogin">Connexion</button>
                 </div>
@@ -62,13 +67,15 @@ import axios from "axios";
 
 export default {
     name: 'signup',
+
     data() {
         return {
             pseudo: "",
             email: "",
             password: "",
             submited: false,
-            isActive: true
+            isActive: true,
+            alert: []
         }
     },
     // is the references for xxx.$model in html part
@@ -113,16 +120,18 @@ export default {
                         password: this.password,
                     })
                     .then(() => {
+                        alert('Compte créé avec succès')
                         localStorage.setItem('pseudo', this.pseudo)
-                        console.log(this.pseudo)
-                        alert("Merci ! Votre compte est bien créé")
                         this.$router.push('Login')
                     })
-                    .catch(error => {
-                        console.log("quelque chose s'est mal passé :(" + (error))
+                    .catch((error) => {
+                        if(error.response){
+                            this.alert = error.response.status;
+                        }
                     })
             }
-        }
+        },
+
     }
 }
 </script>

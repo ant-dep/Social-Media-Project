@@ -70,10 +70,10 @@ export default {
                 if (this.image !== null) {
                     formData.append("image", this.image);
                     formData.append("content", this.content);
-                    formData.append("userId",parseInt(localStorage.getItem('userId')));
+                    formData.append("userId", parseInt(localStorage.getItem('userId')));
                 } else if(this.content !== null){
                     formData.append("content", this.content);
-                    formData.append("userId",parseInt(localStorage.getItem('userId')));
+                    formData.append("userId", parseInt(localStorage.getItem('userId')));
                 }
 
             axios.post('http://localhost:3000/api/post/new', formData, {

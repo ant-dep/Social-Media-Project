@@ -1,22 +1,15 @@
 const db = require("../models/index");
-const jwt = require('../middleware/auth');
 const Post = db.post;
 const User = db.user;
 const Comment = db.comment;
-const fs = require('fs');
 const asyncLib = require('async');
 
 // ----------  CRUD MODEL  ----------  //
 
-const CONTENT_LIMIT = 2;
 const ITEMS_LIMIT = 50;
 
 // ----------  CREATE  ----------  //
 exports.createPost = (req, res, next) => {
-    // Getting auth header
-    const headerAuth = req.headers['authorization'];
-    const userId = jwt.getUserId(headerAuth);
-
     // Params
     const content = req.body.content;
     // Checks if there is a file and define its address or leave it blank
@@ -31,7 +24,7 @@ exports.createPost = (req, res, next) => {
         // 1. Get the user to be linked with the post
         function(done) {
             User.findOne({
-                    where: { id: userId }
+                    where: { id: req.body.userId }
                 })
                 .then(function(userFound) {
                     done(null, userFound);
@@ -47,7 +40,6 @@ exports.createPost = (req, res, next) => {
                 Post.create({
                         content: content,
                         imageUrl: imageUrl,
-                        likes: 0,
                         UserId: userFound.id
                     })
                     .then(function(newPost) {
@@ -71,9 +63,6 @@ exports.createPost = (req, res, next) => {
 
 // ----------  READ  ----------  //
 exports.findAll = (req, res) => {
-    // Getting auth header
-    const headerAuth = req.headers['authorization'];
-    const userId = jwt.getUserId(headerAuth);
 
     const fields = req.query.fields; // DB table fields to load
     const limit = parseInt(req.query.limit); // Limits the number..
@@ -86,41 +75,25 @@ exports.findAll = (req, res) => {
 
     asyncLib.waterfall([
 
-            // 1. Check if the user exists
-            function(done) {
-                User.findOne({
-                        where: { id: userId }
-                    })
-                    .then(function(userFound) {
-                        done(null, userFound);
-                    })
-                    .catch(function(err) {
-                        return res.status(500).json({ 'error': 'unable to verify user' });
-                    });
-            },
             // 2. If found, get all posts by pseudo
-            function(userFound, done) {
-                if (userFound) {
-                    Post.findAll({
-                        // Never Trust User Inputs -> test them
-                        order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']],
-                        attributes: (fields !== '*' && fields != null) ? fields.split(',') : null,
-                        limit: (!isNaN(limit)) ? limit : null,
-                        offset: (!isNaN(offset)) ? offset : null,
-                        include: [{ // Links the post with User and Comments tables
-                            model: User,
-                            Comment,
-                            attributes: ['pseudo']
-                        }]
-                    }).then(function(posts) {
-                        done(posts)
-                    }).catch(function(err) {
-                        console.log(err);
-                        res.status(500).json({ "error": "invalid fields" });
-                    });
-                } else {
-                    res.status(404).json({ 'error': 'user not found' });
-                }
+            function(done) {
+                Post.findAll({
+                    // Never Trust User Inputs -> test them
+                    order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']],
+                    attributes: (fields !== '*' && fields != null) ? fields.split(',') : null,
+                    limit: (!isNaN(limit)) ? limit : null,
+                    offset: (!isNaN(offset)) ? offset : null,
+                    include: [{ // Links the post with User and Comments tables
+                        model: User,
+                        Comment,
+                        attributes: ['pseudo', 'imageUrl', 'isAdmin']
+                    }]
+                }).then(function(posts) {
+                    done(posts)
+                }).catch(function(err) {
+                    console.log(err);
+                    res.status(500).json({ "error": "invalid fields" });
+                });
             },
             // 3. if done, confirm it
         ],
@@ -133,53 +106,15 @@ exports.findAll = (req, res) => {
         })
 };
 
-// ----------  UPDATE  ----------  //
-exports.modifyPost = (req, res, next) => {
-
-    const headerAuth = req.headers['authorization'];
-    const userId = jwt.getUserId(headerAuth);
-
-    if (!req.body) {
-        return res.status(400).send({
-            message: "Votre message modifié ne peut pas être vide"
-        });
-    }
-    const id = userId;
-
-    Post.modifyPost(id, req.body)
-        .then(data => {
-            if (!data) {
-                res.status(404).send({
-                    message: `Impossible de modifier le post avec id=${id}`
-                });
-            } else res.send({ message: "Post modifié avec succes ! " });
-        })
-        .catch(err => {
-            res.status(500).send({ message: "Erreur avec la modification du post avec l'id" + id });
-        });
-};
-
 // ----------  DELETE  ----------  //
 exports.deletePost = (req, res, next) => {
 
-    Post.findOne({
+    // Soft-deletion modifying the post the ad a timestamp to deletedAt
+    Post.destroy({
             where: {
                 id: req.params.id
             }
-        }).then(post => {
-            // Checking if there is a file attached with the post
-            if (post.imageUrl !== null) {
-                const filename = post.imageUrl.split('/images/')[1]; // get the filename
-                fs.unlink(`images/${filename}`, () => { // delete the file
-                    Post.destroy({ where: { id: req.params.id } }) // then delete the post
-                        .then(() => res.status(200).json({ message: 'Post supprimé !' }))
-                        .catch(error => res.status(400).json({ error }));
-                });
-            }
-            // Just delete the post if no file attached
-            Post.destroy({ where: { id: req.params.id } })
-                .then(() => res.status(200).json({ message: 'Post supprimé !' }))
-                .catch(error => res.status(400).json({ error }));
         })
+        .then(() => res.status(200).json({ message: 'Post supprimé !' }))
         .catch(error => res.status(400).json({ message: "Post introuvable", error: error }))
 };

@@ -10,7 +10,6 @@ const rateLimit = require("express-rate-limit");
 const postsRoutes = require("./routes/posts");
 const usersRoutes = require("./routes/users");
 const commentsRoutes = require("./routes/comments");
-const likesRoutes = require("./routes/likes")
 
 require('dotenv').config(); // private code plugin
 const cors = require('cors'); // API calls plugin
@@ -33,7 +32,6 @@ app.use(cors());
 app.use('/api/post', postsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/post', commentsRoutes);
-app.use('/api/post', likesRoutes);
 
 // Input sanitization against XXS attacks
 app.use(xss());

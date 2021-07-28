@@ -2,7 +2,7 @@
     <div class="container-fluid">
         <div class="card col-8 mx-auto">
             <div class="row">
-                <div class="col-8 mx-auto my-2">
+                <div class="col-8 mx-auto my-4">
                     <div class="d-flex justify-content-center align-items-center">
                         <b-img id="imgProfile" :src="user.imageUrl" fluid></b-img>
                         <h1 class="ml-2 align-self-end">{{ user.pseudo}}</h1>
@@ -34,6 +34,7 @@
                                                 </span>
                                                 <input id="pseudo" name="pseudo" type="text" class="col-7 col-lg-6 form-control form-control-sm" v-model.trim="$v.pseudo.$model" :placeholder="user.pseudo">
                                             </div>
+                                            <span class="badge badge-danger" v-if="!$v.pseudo.minLength">{{$v.pseudo.$params.minLength.min}} caractères min !</span>
                                         </div>
                                     </div>
                                     <div class="form-group form-group-sm" :class="{ 'form-group--error': $v.email.$error }">
@@ -73,11 +74,14 @@
                 </div>
                 <div class="row">
                     <div class="col-8 mx-auto my-5">
-                        <b-link v-if="isActive" class="delete badge badge-light font-weight-bold py-1 mr-2" to="AllProfiles"><small>Consulter les profiles</small></b-link>
+                        <b-link v-if="this.user.isAdmin == 1" class="delete badge badge-light font-weight-bold py-1 mr-2" to="AllProfiles"><small>Consulter les profiles</small></b-link>
                         <b-link class="delete badge badge-light font-weight-bold py-1 " @click.prevent="deleteUser"><small>Supprimer mon compte</small></b-link>
                     </div>
                 </div>
             </div>
+            <b-alert v-if="errorInputs" show dismissible variant="danger">Pseudo ou Email déjà utilisé</b-alert>
+            <b-alert v-if="confirmUpdate" show dismissible variant="success">Profil mis à jour</b-alert>
+            <b-alert v-if="errorDelete" show dismissible variant="danger">Une erreur est survenue. Veuillez contacter un administrateur</b-alert>
         </div>
     </div>
 </template>
@@ -90,21 +94,13 @@ import axios from "axios";
 export default {
     name: 'profile',
 
-    beforeMount() {
-
-        if (this.userId === 4) {
-                this.isActive = true
-        }
-
-    },
-
     async created() {
         await axios
                 .get('http://localhost:3000/api/users/profile', {
                 headers: {
-                    "Content-Type": "multipart/form-data",
-                    "Authorization": 'Bearer ' + localStorage.getItem('token')
-                }
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Authorization": "Bearer " + this.token,
+                },
                 })
                 .then((response) => {
                     this.user = response.data
@@ -113,7 +109,6 @@ export default {
                 .catch(e => {
                     console.log(e + "User inconnu");
                     this.$router.push('/login');
-                    window.alert('Veuillez vous connecter pour accéder au site')
                 })
     },
 
@@ -127,7 +122,11 @@ export default {
             email: "",
             password: "",
             image: "",
+            isAdmin: "",
             isActive: false,
+            errorInputs: false,
+            confirmUpdate: false,
+            errorDelete: false
         }
     },
 
@@ -155,7 +154,7 @@ export default {
 
             if (this.image) {
                     formData.append("image", this.image);
-                    formData.append("userId",parseInt(localStorage.getItem('userId')));
+                    formData.append("userId",this.userId);
                     formData.append("pseudo", this.pseudo);
                     formData.append("email", this.email);
                     formData.append("password", this.password);
@@ -170,40 +169,36 @@ export default {
                 .put(`http://localhost:3000/api/users/${this.userId}`, formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
-                        "Authorization": 'Bearer ' + localStorage.getItem('token')
+                        "Authorization": 'Bearer ' + this.token
                     }
                 })
                 .then(() => {
                     localStorage.setItem('pseudo', this.pseudo)
-                    console.log(formData)
-                    alert("Merci ! Votre compte a bien été modifié")
-                    this.$router.go()
+                    this.confirmUpdate = true
                 })
-                .catch(error => {
-                    console.log("quelque chose s'est mal passé :(" + (error))
+                .catch(() => {
+                    this.errorInputs = true
                 })
         },
 
         deleteUser() {
-            const id = this.userId;
-            if(id == id || id == 4) {
-                axios
-                    .delete('http://localhost:3000/api/users/' + id, {
-                        headers: {
-                            "Content-Type": "application/x-www-form-urlencoded",
-                            "Authorization": 'Bearer ' + localStorage.getItem('token')
-                        }
-                    })
-                    .then(res => {
-                        console.log(res);
-                        alert("Votre compte à bien été supprimé !");
-                        localStorage.removeItem("token");
-                        localStorage.removeItem("userId");
-                        localStorage.removeItem("pseudo");
-                        this.$router.push('/signup');
-                    })
-                    .catch(error => (console.log('cannot delete user ' + error )))
-            }
+
+            axios
+                .delete(`http://localhost:3000/api/users/${this.userId}`, {
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "Authorization": 'Bearer ' + this.token
+                    }
+                })
+                .then(res => {
+                    console.log(res);
+                    alert("Votre compte à bien été supprimé !");
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("userId");
+                    localStorage.removeItem("pseudo");
+                    this.$router.push('/signup');
+                })
+                .catch(error => (console.log('cannot delete user ' + error )))
         }
     }
 }

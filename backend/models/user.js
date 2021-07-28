@@ -20,10 +20,11 @@ module.exports = (sequelize, DataTypes) => {
         pseudo: DataTypes.STRING,
         password: DataTypes.STRING,
         imageUrl: DataTypes.STRING,
-        isAdmin: DataTypes.BOOLEAN
+        isAdmin: DataTypes.BOOLEAN,
     }, {
         sequelize,
         modelName: 'User',
+        paranoid: true,
     });
     return User;
 };

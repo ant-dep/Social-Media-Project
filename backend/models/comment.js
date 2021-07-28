@@ -38,10 +38,11 @@ module.exports = (sequelize, DataTypes) => {
     Comment.init({
         content: DataTypes.STRING,
         userId: DataTypes.INTEGER,
-        postId: DataTypes.INTEGER
+        postId: DataTypes.INTEGER,
     }, {
         sequelize,
         modelName: 'Comment',
+        paranoid: true,
     });
     return Comment;
 };

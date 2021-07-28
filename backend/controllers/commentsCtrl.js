@@ -1,11 +1,16 @@
 const db = require("../models/index");
 const Comment = db.comment;
 const User = db.user;
-const jwt = require('../middleware/auth');
 const asyncLib = require('async');
 
 // ----------  CREATE  ----------  //
 exports.createComment = (req, res, next) => {
+
+    const content = req.body.content;
+
+    if (content == null) {
+        return res.status(400).json({ 'error': 'missing body' });
+    }
 
     asyncLib.waterfall([
 
@@ -28,8 +33,8 @@ exports.createComment = (req, res, next) => {
                 // Create the post and save it in DB
                 Comment.create({
                         content: req.body.content,
-                        userId: req.body.userId,
-                        postId: req.body.postId
+                        UserId: userFound.id,
+                        postId: req.params.id,
                     })
                     .then(function(newComment) {
                         done(newComment)
@@ -53,59 +58,30 @@ exports.createComment = (req, res, next) => {
 // ----------  READ ALL  ----------  //
 exports.getAllComments = (req, res, next) => {
 
-    // Getting auth header
-    const headerAuth = req.headers['authorization'];
-    const userId = jwt.getUserId(headerAuth);
+        Comment.findAll({
+                include: [{ // Links the post with User and Comments tables
+                    model: User,
+                    attributes: ['pseudo', 'imageUrl', 'isAdmin']
+                }]
+            })
+            .then((comment => res.status(200).json(comment)))
+            .catch(error => res.status(400).json({ error: "Erreur lors de l'affichage des commentaires" }));
+    },
 
-    asyncLib.waterfall([
 
-        // 1. Get the user to be linked with the comment
-        function(done) {
-            User.findOne({
-                    where: { id: userId }
-                })
-                .then(function(userFound) {
-                    done(null, userFound);
-                })
-                .catch(function(err) {
-                    return res.status(500).json({ 'error': 'unable to verify user' + err });
-                });
-        },
+    // ----------  DELETE  ----------  //
+    exports.deleteComment = (req, res, next) => {
 
-        // 2. If found, create comment with input
-        function(userFound) {
-            if (userFound) {
-                Comment.findAll({})
-                    .then(comment => res.status(200).json(comment))
-                    .catch(() => res.status(400).json({ error: "Erreur lors de l'affichage des commentaires" }))
-            } else {
-                res.status(404).json({ 'error': 'user not found' });
-            }
-        },
-
-        // 3. if done, confirm it
-    ], function(Comment) {
-        if (Comment) {
-            return res.status(201).json(Comment);
-        } else {
-            return res.status(500).json({ 'error': 'cannot send comment' });
-        }
-    })
-};
-
-// ----------  DELETE  ----------  //
-exports.deleteComment = (req, res, next) => {
-
-    Comment.findOne({
-            where: {
-                id: req.params.id
-            }
-        }).then(comment => {
-            if (comment) {
-                Comment.destroy({ where: { id: req.params.id } })
-                    .then(() => res.status(200).json({ message: 'Comment supprimé !' }))
-                    .catch(error => res.status(400).json({ error }));
-            }
-        })
-        .catch(error => res.status(400).json({ message: "Comment introuvable", error: error }))
-};
+        Comment.findOne({
+                where: {
+                    id: req.params.id
+                }
+            }).then(comment => {
+                if (comment) {
+                    Comment.destroy({ where: { id: req.params.id } })
+                        .then(() => res.status(200).json({ message: 'Comment supprimé !' }))
+                        .catch(error => res.status(400).json({ error }));
+                }
+            })
+            .catch(error => res.status(400).json({ message: "Comment introuvable", error: error }))
+    };
