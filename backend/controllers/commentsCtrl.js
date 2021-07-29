@@ -6,7 +6,8 @@ const asyncLib = require('async');
 // ----------  CREATE  ----------  //
 exports.createComment = (req, res, next) => {
 
-    const content = req.body.content;
+    // Params
+    const content = req.body;
 
     if (content == null) {
         return res.status(400).json({ 'error': 'missing body' });

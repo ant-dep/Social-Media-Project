@@ -2,9 +2,16 @@
   <div class="min-vh-100 d-flex flex-column justify-content-between">
     <NavbarPost />
     <Jumbo />
-      <b-alert v-if="errorDeletePost" show dismissible variant="danger">Impossible de supprimé votre post. Veuillez contacter un administrateur"</b-alert>
-      <b-alert v-if="errorComPost" show dismissible variant="danger">Impossible de commenter</b-alert>
-      <b-alert v-if="confirmComPost" show dismissible variant="success">Commentaire ajouté</b-alert>
+
+      <!-- ALERTS MESSAGES DEPENGING ON AXIOS REQUESTS -->
+        <b-alert v-if="errorDeletePost" show dismissible variant="danger">Impossible de supprimé votre post. Veuillez contacter un administrateur"</b-alert>
+        <b-alert v-if="confirmDeletePost" show dismissible variant="success">Post supprimé</b-alert>
+        <b-alert v-if="errorComPost" show dismissible variant="danger">Impossible de commenter</b-alert>
+        <b-alert v-if="confirmComPost" show dismissible variant="success">Commentaire ajouté</b-alert>
+        <b-alert v-if="errorDeleteCom" show dismissible variant="danger">Impossible de supprimer votre commentaire. Veuillez contacter un administrateur"</b-alert>
+        <b-alert v-if="confirmDeleteCom" show dismissible variant="success">Commentaire supprimé</b-alert>
+      <!-- ALERTS MESSAGES DEPENGING ON AXIOS REQUESTS -->
+
     <CreatePostBtn />
     <Post v-for="post in posts" :key="post.id" >
 
@@ -86,6 +93,7 @@ export default {
       userId: parseInt(localStorage.getItem("userId")),
       pseudo: localStorage.getItem('pseudo'),
       isAdmin: localStorage.getItem('isAdmin'),
+
       posts: [],
       comments: [],
       currentUser: [],
@@ -96,7 +104,12 @@ export default {
         isAdmin: "",
       },
       newComment: "",
+
+      // ALERTS MESSAGES
       errorDeletePost: false,
+      confirmDeletePost: false,
+      errorDeleteCom: false,
+      confirmDeleteCom: false,
       errorComPost: false,
       confirmComPost: false,
     }
@@ -160,31 +173,25 @@ export default {
 
   methods: {
 
-    postImage() {
-      console.log(this.post.imageUrl);
-      return `images/${this.imageUrl}`
-    },
+        // NEW COMMENT
+    sendCom(id) {
 
-    // NEW COMMENT
-    async sendCom(id) {
-      this.$v.$touch();
+      const data = JSON.stringify({content: this.newComment})
 
-        await axios
-          .post('http://localhost:3000/api/post/' + id + '/comment', {
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Authorization": 'Bearer ' + this.token
-              },
-            content: this.newComment
-          })
-          .then((res) => {
-            console.log(res);
-            this.confirmComPost = true
-          })
-          .catch((err) => {
-            this.errorComPost = true
-            console.log(err);
-          })
+      axios
+        .post('http://localhost:3000/api/post/' + id + '/comment', data, {
+          headers: {
+            'Content-Type': 'application/json',
+            "Authorization": "Bearer " + this.token
+          },
+        })
+        .then(() => {
+          this.$router.go()
+          this.confirmComPost = true
+        })
+        .catch(() => {
+          this.errorComPost = true
+        })
     },
 
     // DELETE COMMENT by id
@@ -196,14 +203,12 @@ export default {
             "Authorization": 'Bearer ' + this.token
           }
         })
-        .then(response => {
-          alert("Le commentaire a été supprimé !")
-          console.log(response);
+        .then(() => {
           this.$router.go()
+          this.confirmDeleteCom = true
         })
-        .catch((err) => {
-          alert("Impossible de supprimé votre commentaire. Veuillez contacter un administrateur")
-          console.log(err);
+        .catch(() => {
+          this.errorDeleteCom = true
         })
     },
 
@@ -216,13 +221,12 @@ export default {
             "Authorization": 'Bearer ' + this.token
           }
         })
-        .then(response => {
-          console.log(response);
+        .then(() => {
           this.$router.go()
+          this.confirmDeletePost = true
         })
-        .catch((err) => {
+        .catch(() => {
           this.errorDeletePost = true
-          console.log(err);
         })
     }
   }
