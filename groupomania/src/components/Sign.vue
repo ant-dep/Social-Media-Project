@@ -45,6 +45,20 @@
                         <span class="badge badge-danger" v-if="!$v.password.minLength">{{$v.password.$params.minLength.min}} caractères min !.</span>
                     </div>
                 </div>
+                <div class="form-group form-group-sm">
+                    <div class="col mx-auto position-relative">
+                        <label for="confirmPassword">Confirmation</label>
+                        <div class="d-flex justify-content-center input-group">
+                            <span class="icon position-absolute input-group-addon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="30" fill="currentColor" class="bi bi-file-lock2-fill" viewBox="0 0 16 16">
+                                    <path d="M7 6a1 1 0 0 1 2 0v1H7V6z"/>
+                                    <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm-2 6v1.076c.54.166 1 .597 1 1.224v2.4c0 .816-.781 1.3-1.5 1.3h-3c-.719 0-1.5-.484-1.5-1.3V8.3c0-.627.46-1.058 1-1.224V6a2 2 0 1 1 4 0z"/>
+                                </svg>
+                            </span>
+                            <input id="confirmPassword" name="confirmPassword" type="password" class="col-7 col-lg-6 form-control form-control-sm" v-model.trim="$v.confirmPassword.$model" @change="activatedBtn()">
+                        </div>
+                    </div>
+                </div>
                 <button class="btn btn-dark btn-sm mt-3" type="submit" @click.prevent="signup" :disabled="isActive">S'inscrire</button>
             </form>
             <div>
@@ -52,11 +66,12 @@
                 <b-alert v-if="this.alert == 400" show dismissible variant="danger">Veuillez respecter le format des champs</b-alert>
                 <b-alert v-if="this.alert == 409" show dismissible variant="danger">Pseudo ou Email déjà utilisé</b-alert>
                 <b-alert v-if="this.alert == 500" show dismissible variant="danger">Une erreur est survenue</b-alert>
+                <b-alert v-if="differentConfirmPassword" show dismissible variant="danger">Les mots de passe sont différents</b-alert>
             </div>
             <div class="pt-5">
-                    <p> Déjà inscrit ? Vous connectez ici !</p>
-                    <button class="btn btn-dark btn-sm" @click.prevent="goLogin">Connexion</button>
-                </div>
+                <p> Déjà inscrit ? Vous connectez ici !</p>
+                <button class="btn btn-dark btn-sm" @click.prevent="goLogin">Connexion</button>
+            </div>
         </div>
     </div>
 </template>
@@ -74,8 +89,10 @@ export default {
             pseudo: "",
             email: "",
             password: "",
+            confirmPassword: "",
             submited: false,
             isActive: true,
+            differentConfirmPassword: false,
             alert: []
         }
     },
@@ -92,25 +109,30 @@ export default {
         password: {
             required,
             minLength: minLength(6)
-        }
+        },
+        confirmPassword: {
+            required,
+        },
     },
 
-    methods:{
+    methods: {
 
         goLogin(){
-        this.$router.push('Login');
-    },
+            this.$router.push('Login');
+        },
 
         activatedBtn() {
             const pseudo = document.getElementById('pseudo').value
             const email = document.getElementById('email').value
             const password = document.getElementById('password').value
-            if (email !== null && password !== null && pseudo !== null){
+            const confirmPassword = document.getElementById('confirmPassword').value
+            if (email !== null && password !== null && pseudo !== null && confirmPassword !== null){
                 this.isActive = false
             }
         },
 
         signup() {
+            if(this.password == this.confirmPassword) {
             this.$v.$touch() // checks for errors
             this.submited = true
             if (this.pseudo && this.email && this.password) {
@@ -131,8 +153,11 @@ export default {
                         }
                     })
             }
-        },
+            } else {
+                this.differentConfirmPassword = true
+            }
 
+        }
     }
 }
 </script>
