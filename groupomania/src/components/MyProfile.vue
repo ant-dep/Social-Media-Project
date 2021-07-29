@@ -16,13 +16,10 @@
                     <div class="col-10 mx-auto mb-3">
                         <b-link v-b-toggle.newPassword class="btn bg-groupomania font-weight-bold px-2 mr-2">Modifier mes infos</b-link>
                         <b-collapse id="newPassword">
-                            <div class="card col col-lg-8 mx-auto bg-white py-4">
-                                <h1 class="h3 text-secondary mt-3">Modifier mes infos</h1>
-                                <form id="form" class="mt-3" @submit.prevent="updateProfile" enctype="multipart/form-data">
-                                    <label for="image">
-                                        <h5>Modifier mon image</h5>
-                                        <input type="file" name="image" id="image" ref="image" v-on:change="handleFileUpload()"/>
-                                     </label>
+                            <form class="card col col-lg-8 mx-auto bg-white py-4" @submit.prevent="updateProfile" enctype="multipart/form-data">
+                                <div class="form-group mt-3">
+                                    <label id="imageLabel" for="image" class="font-weight-bold">Modifier mon image</label>
+                                    <input type="file" name="image" id="image" ref="image" v-on:change="handleFileUpload()"/>
                                     <div class="form-group form-group-sm" :class="{ 'form-group--error': $v.pseudo.$error }">
                                         <div class="col mx-auto position-relative">
                                             <label for="pseudo"></label>
@@ -65,9 +62,9 @@
                                             <span class="badge badge-danger" v-if="!$v.password.minLength">{{$v.password.$params.minLength.min}} caractères min !.</span>
                                         </div>
                                     </div>
-                                    <button v-b-toggle.newPassword class="btn btn-dark btn-sm mt-3" type="submit" @click.prevent="updateProfile()">Valider</button>
-                                </form>
-                            </div>
+                                    <button v-b-toggle.newPassword class="btn btn-dark btn-sm mt-3" type="submit">Valider</button>
+                                </div>
+                            </form>
                         </b-collapse>
                         <b-link class="btn bg-groupomania font-weight-bold px-3" to="Addpost">Rédiger un post</b-link>
                     </div>
@@ -211,6 +208,16 @@ export default {
     border: solid #FFD7D8;
     height: 100px;
     width: 100px;
+}
+
+#imageLabel {
+    cursor: pointer;
+}
+
+#image {
+   opacity: 0;
+   position: absolute;
+   z-index: -1;
 }
 .bg-groupomania {
     background-color: #FFD7D8;

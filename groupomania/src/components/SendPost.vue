@@ -1,5 +1,4 @@
 <template>
-    <div>
         <div class="col-lg-7 offset-lg-3 mx-auto">
             <div class="row mx-auto">
                 <div class="col-lg-8 mx-auto">
@@ -19,13 +18,10 @@
                                             <b-form-textarea name="content" type="text" v-model="content" class="form-control border-0" id="content" rows="2" placeholder="Quoi de neuf aujourd'hui ?" required></b-form-textarea>
                                             <div class="error" v-if="!$v.content.maxLength">Max. {{ $v.content.$params.maxLength.max }} letters</div>
                                         </div>
-                                        <div class="form-group">
-                                            <label for="image">
-                                                <input type="file" name="image" id="image" ref="image" v-on:change="handleFileUpload()"/>
-                                            </label>
-                                            <div class="col">
-                                                <button class="btn fluid btn-fposts btn-sm bg-info text-dark font-weight-bold">Envoyer</button>
-                                            </div>
+                                        <div class="form-group mt-3">
+                                            <label id="imageLabel" for="image" class="btn btn-primary border-white text-white font-weight-bold mt-2">Ajouter une image</label>
+                                            <input type="file" name="image" id="image" ref="image" v-on:change="handleFileUpload()"/>
+                                            <button class="btn btn-light font-weight-bold ml-3">Envoyer</button>
                                         </div>
                                     </form>
                                 </div>
@@ -34,8 +30,8 @@
                     </div>
                 </div>
             </div>
+            <b-alert v-if="errorAlert" show dismissible variant="danger">Une erreur est survenue</b-alert>
         </div>
-    </div>
 </template>
 
 <script>
@@ -47,10 +43,11 @@ export default {
     data() {
         return {
             userId: parseInt(localStorage.getItem('userId')),
+            pseudo: localStorage.getItem("pseudo"),
             content: "",
             image: "",
             postId:"",
-            pseudo: localStorage.getItem("pseudo")
+            erroAlert: false
         }
     },
     validations: {
@@ -82,15 +79,12 @@ export default {
                     "Authorization": 'Bearer ' + localStorage.getItem('token')
                 }
             })
-            .then((res) => {
-                console.log(formData);
+            .then(() => {
                 this.$router.push('/allpost');
-                console.log(res);
-                alert("Bravo! Votre post est bien créé");
             })
-            .catch(e => {
-                    console.log(e + "Impossible d'éditer le post, une erreur est survenue");
-                    console.log(formData);
+            .catch(() => {
+                this.erroAlert = true
+                console.log(formData);
             });
         },
     }
@@ -98,5 +92,15 @@ export default {
 </script>
 
 <style scoped>
+
+#imageLabel {
+    cursor: pointer;
+}
+
+#image {
+   opacity: 0;
+   position: absolute;
+   z-index: -1;
+}
 
 </style>

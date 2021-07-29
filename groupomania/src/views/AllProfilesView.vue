@@ -3,26 +3,27 @@
     <NavbarPost />
     <h1 class="my-2">Liste des utilisateurs</h1>
     <hr class="line w-100 mt-1 mb-0 p-0">
-    <div class="row mx-3 py-2 border rounded bg-primary">
-            <span class="col-1 text-white font-weight-bold px-3 my-auto">ID</span>
-            <span class="col-1 text-white font-weight-bold px-3 my-auto">PHOTO</span>
-            <span class="col-1 text-white font-weight-bold px-3 my-auto">PSEUDO</span>
-            <span class="col-5 text-white font-weight-bold px-3 my-auto">EMAIL</span>
-            <span class="col-1 text-white font-weight-bold px-3 my-auto">ADMIN</span>
-            <span class="col-2 text-white font-weight-bold px-3 my-auto">CRÉÉ LE</span>
+    <div class="col col-md-8 mx-auto">
+        <div class="row mx-0 py-2 border rounded bg-primary">
+            <span class="col-1 text-white font-weight-bold px-0 my-auto">ID</span>
+            <span class="col-2 text-white font-weight-bold px-0 my-auto">PHOTO</span>
+            <span class="col-1 text-white font-weight-bold px-0 my-auto">PSEUDO</span>
+            <span class="col-4 text-white font-weight-bold px-0 my-auto">EMAIL</span>
+            <span class="col-1 text-white font-weight-bold px-0 my-auto">ADMIN</span>
+            <span class="col-2 text-white font-weight-bold px-0 my-auto">CRÉÉ LE</span>
         </div>
+    </div>
 
     <AllProfiles v-for="user in users" :key="user.id">
         <template v-slot:AllUsers>
             <div class="row">
-                <span class="col-1 text-white font-weight-bold px-3 my-auto">{{ user.id }}</span>
-                <img id="imgProfile" :src="user.imageUrl" class="col-1">
-                <span class="col-1 text-white font-weight-bold px-3 my-auto">{{ user.pseudo }}</span>
-                <span class="col-5 text-white font-weight-bold px-3 my-auto">{{ user.email }}</span>
-                <span class="col-1 text-white font-weight-bold px-3 my-auto">{{ user.isAdmin }}</span>
-                <span class="col-2 text-white font-weight-bold px-3 my-auto">{{ user.createdAt.substr(0, 10).split("-").reverse().join("-") }}</span>
-
-                <button class="col-1 delete badge badge-danger text-black font-weight-bold py-1" @click.prevent="deleteUser(user.id)">Bannir</button>
+                <span class="col-1 text-white font-weight-bold px-0 my-auto">{{ user.id }}</span>
+                <b-img-lazy id="imgProfile" :src="user.imageUrl" class="col-2 my-auto" fluid-grow></b-img-lazy>
+                <span class="col-1 text-white font-weight-bold px-0 my-auto">{{ user.pseudo }}</span>
+                <span class="col-4 text-white font-weight-bold px-0 my-auto">{{ user.email }}</span>
+                <span class="col-1 text-white font-weight-bold px-0 my-auto">{{ user.isAdmin }}</span>
+                <span class="col-2 text-white font-weight-bold px-0 my-auto">{{ user.createdAt.substr(0, 10).split("-").reverse().join("-") }}</span>
+                <button class="col-1 badge badge-danger font-weight-bold my-auto" @click.prevent="deleteUser(user.id)">Bannir</button>
             </div>
         </template>
     </AllProfiles>

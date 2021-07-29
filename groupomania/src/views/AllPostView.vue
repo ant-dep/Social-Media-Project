@@ -20,9 +20,7 @@
         <div>
           <div class="col d-flex justify-content-between align-items-center p-0">
             <div>
-              <img id="imgProfile" :src="post.User.imageUrl"
-                class="rounded-circle"
-              >
+              <img id="imgProfile" :src="post.User.imageUrl" class="rounded-circle">
               <span class="text-white font-weight-bold px-3 ml-2">{{ post.User.pseudo }}</span>
             </div>
             <span class="badge text-white align-self-start p-0">{{ post.createdAt.substr(0, 10).split("-").reverse().join("-") }}</span>
@@ -55,14 +53,15 @@
 
       <!-- SLOT FOR A NEW COMMENT -->
       <template v-slot:EditCom>
-          <form class="container-fluid mt-2">
-            <div class="row">
-              <textarea id="newComment" class="col-11 form-control-sm mx-auto" v-model.trim="$v.newComment.$model" aria-label="Zone d'un commentaire" placeholder="Commenter"></textarea>
+          <form v-on:submit.prevent="sendCom(post.id)" class="container-fluid mt-2">
+            <div class="form-group row">
+              <label class="sr-only" for="comment"></label>
+              <b-form-textarea id="newComment" class="col-11 form-control-sm mx-auto" name="comment" type="text" v-model.trim="$v.newComment.$model" aria-label="Zone d'un commentaire" placeholder="Commenter" required></b-form-textarea>
               <div class="error" v-if="!$v.newComment.maxLength">Max. {{ $v.newComment.$params.maxLength.max }} letters</div>
             </div>
             <div>
-              <button class="btn btn-light rounded py-1 px-2 mt-2 mr-2" @click.prevent="sendCom(post.id)" id="sendcom" type="submit" aria-label="Publication d'un commentaire">Commenter</button>
-              <button v-if="userId == post.userId || currentUser.isAdmin == 1" class="btn btn-light rounded py-1 px-2 mt-2" @click.prevent="deletePost(post.id)" id="delpost" type="submit"><i class="fa fa-trash"></i></button>
+              <button class="btn btn-light rounded py-1 px-2 mt-2 mr-3" id="sendcom" type="submit" aria-label="Publication d'un commentaire">Commenter</button>
+              <button v-if="userId == post.userId || currentUser.isAdmin == 1" class="btn btn-primary text-white border-white rounded py-1 px-3 mt-2" @click.prevent="deletePost(post.id)" id="delpost" type="submit" aria-label="Supprimer le post"><i class="fa fa-trash"></i></button>
             </div>
           </form>
       </template>
@@ -176,6 +175,7 @@ export default {
         // NEW COMMENT
     sendCom(id) {
 
+      this.$v.$touch()
       const data = JSON.stringify({content: this.newComment})
 
       axios

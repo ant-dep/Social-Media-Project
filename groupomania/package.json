@@ -8,6 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "-": "0.0.1",
     "@fortawesome/fontawesome-svg-core": "^1.2.35",
     "@fortawesome/free-regular-svg-icons": "^5.15.3",
     "@fortawesome/vue-fontawesome": "^2.0.2",
@@ -16,6 +17,7 @@
     "bootstrap-icons": "^1.5.0",
     "bootstrap-vue": "^2.21.2",
     "core-js": "^3.6.5",
+    "npm": "^7.20.2",
     "sass": "^1.32.8",
     "vue": "^2.6.12",
     "vue-gifplayer": "^1.0.2",

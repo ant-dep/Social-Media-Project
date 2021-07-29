@@ -48,6 +48,7 @@
                 <button class="btn btn-dark btn-sm mt-3" type="submit" @click.prevent="signup" :disabled="isActive">S'inscrire</button>
             </form>
             <div>
+                <!-- alert from axios'response -->
                 <b-alert v-if="this.alert == 400" show dismissible variant="danger">Veuillez respecter le format des champs</b-alert>
                 <b-alert v-if="this.alert == 409" show dismissible variant="danger">Pseudo ou Email déjà utilisé</b-alert>
                 <b-alert v-if="this.alert == 500" show dismissible variant="danger">Une erreur est survenue</b-alert>
