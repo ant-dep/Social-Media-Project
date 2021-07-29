@@ -172,6 +172,7 @@ export default {
                 .then(() => {
                     localStorage.setItem('pseudo', this.pseudo)
                     this.confirmUpdate = true
+                    this.$router.go()
                 })
                 .catch(() => {
                     this.errorInputs = true
