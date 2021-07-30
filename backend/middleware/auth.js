@@ -6,7 +6,7 @@ module.exports = (req, res, next) => {
         // Check the 2 second items (token) in the authorization part within headers of the request
         const token = req.headers.authorization.split(' ')[1];
         // check if the token is the same as required
-        const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
+        const decodedToken = jwt.verify(token, process.env.DB_TOKEN);
         // keep the userId given in the token
         const userId = decodedToken.userId;
         // if the userId is not the same as the one saved -> error

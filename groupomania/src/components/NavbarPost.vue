@@ -2,7 +2,7 @@
     <div class="container-fluid px-0">
         <nav class="Navbar">
             <b-navbar toggleable="md" type="dark" variant="primary">
-                <a href="/"><img class="navbar-brand img-fluid logo" src="../assets/icon-left-font-monochrome-black.svg" aria-label="logo groupomania" alt="Logo groupomania"></a>
+                <a href="/allpost"><img class="navbar-brand img-fluid logo" src="../assets/icon-left-font-monochrome-black.svg" aria-label="logo groupomania" alt="Logo groupomania"></a>
                 <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
                 <b-collapse id="nav-collapse" is-nav>
                     <b-navbar-nav class="ml-auto">

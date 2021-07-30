@@ -90,6 +90,8 @@
                     </div>
                 </div>
             </div>
+
+
             <b-alert v-if="errorInputs" show dismissible variant="danger">Pseudo ou Email déjà utilisé</b-alert>
             <b-alert v-if="confirmUpdate" show dismissible variant="success">Profil mis à jour</b-alert>
             <b-alert v-if="errorDelete" show dismissible variant="danger">Une erreur est survenue. Veuillez contacter un administrateur</b-alert>
