@@ -10,7 +10,7 @@ const usersCtrl = require('../controllers/usersCtrl');
 // Limits the number of try per connection
 const rateLimiter = rateLimit({
     windowMs: 5 * 60 * 1000, // then blocks for 5mn
-    max: 5, // max 5 try
+    max: 55, // max 5 try
     message: " Trop de tentatives échouées, réessayez dans 5 minutes",
 });
 

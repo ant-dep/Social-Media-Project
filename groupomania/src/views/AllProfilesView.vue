@@ -18,12 +18,15 @@
         <template v-slot:AllUsers>
             <div class="row">
                 <span class="col-1 text-white font-weight-bold px-0 my-auto">{{ user.id }}</span>
-                <b-img-lazy id="imgProfile" :src="user.imageUrl" class="col-2 my-auto" fluid-grow></b-img-lazy>
+                <b-img-lazy id="imgProfile" :src="user.imageUrl" class="col-2 my-auto py-2"></b-img-lazy>
                 <span class="col-1 text-white font-weight-bold px-0 my-auto">{{ user.pseudo }}</span>
                 <span class="col-4 text-white font-weight-bold px-0 my-auto">{{ user.email }}</span>
                 <span class="col-1 text-white font-weight-bold px-0 my-auto">{{ user.isAdmin }}</span>
                 <span class="col-2 text-white font-weight-bold px-0 my-auto">{{ user.createdAt.substr(0, 10).split("-").reverse().join("-") }}</span>
                 <button class="col-1 badge badge-danger font-weight-bold my-auto" @click.prevent="deleteUser(user.id)">Bannir</button>
+
+                <b-alert v-if="confirmDelete" show dismissible variant="success">Profil supprimé</b-alert>
+                <b-alert v-if="errorDelete" show dismissible variant="danger">Une erreur est survenue.</b-alert>
             </div>
         </template>
     </AllProfiles>
@@ -54,7 +57,10 @@ export default {
                 email: "",
                 imageUrl: "",
                 createdAt: "",
-                isAdmin: ""
+                isAdmin: "",
+
+                confirmDelete: false,
+                errorDelete: false,
             },
         }
     },
@@ -87,12 +93,16 @@ export default {
                         "Authorization": 'Bearer ' + localStorage.getItem('token')
                     }
                 })
-                .then(res => {
-                    console.log(res);
-                    alert("Le compte id:" + id + "à bien été supprimé !");
+                .then(() => {
+                    this.confirmDelete = true
+                })
+                .catch((error) => {
+                    console.log('cannot delete user ' + error )
+                    this.errorDelete = true
+                })
+                .finally(() => {
                     this.$router.go()
                 })
-                .catch(error => (console.log('cannot delete user ' + error )))
         }
     }
 }
@@ -102,8 +112,8 @@ export default {
 
 #imgProfile {
     border-radius: 50%;
-    height: 60px;
-    width: 60px;
+    border: 0;
+    width: 50px;
 }
 
 </style>

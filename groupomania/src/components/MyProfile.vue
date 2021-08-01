@@ -20,6 +20,7 @@
                                 <div class="form-group mt-3">
                                     <label id="imageLabel" for="image" class="font-weight-bold">Modifier mon image</label>
                                     <input type="file" name="image" id="image" ref="image" v-on:change="handleFileUpload()"/>
+                                    <span class="text-center font-weight-bold">{{ image.name }}</span>
                                     <div class="form-group form-group-sm" :class="{ 'form-group--error': $v.pseudo.$error }">
                                         <div class="col mx-auto position-relative">
                                             <label for="pseudo"></label>
@@ -166,18 +167,25 @@ export default {
 
         handleFileUpload(){
             this.image = this.$refs.image.files[0];
+            this.user.imageUrl = URL.createObjectURL(this.image) // replace the user image by the one uploaded
+
         },
 
         updateProfile() {
 
             this.$v.$touch();
+
+            this.errorInputs = false; // reboot error alets before each try
+            this.errorDelete = false;
+            this.differentConfirmPassword = false;
+
             // Checks if password input is filled
             if(this.password !== null) {
                 // Checks if both matches
                 if(this.password !== this.confirmPassword) {
                     // Throw error if not
                     this.differentConfirmPassword = true
-                    this.$router.go()
+
                 // Send the request if OK
                 } else {
                     const formData = new FormData();
@@ -284,6 +292,9 @@ export default {
 
 #imageLabel {
     cursor: pointer;
+    border: 1px solid lightgray;
+    padding: 5px;
+    border-radius: 5px;
 }
 
 #image {

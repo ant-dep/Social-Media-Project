@@ -15,13 +15,15 @@
                                     <form v-on:submit.prevent="createPost" enctype="multipart/form-data">
                                         <div class="form-group mb-0">
                                             <label class="sr-only" for="content">Créer un post</label>
-                                            <b-form-textarea name="content" type="text" v-model="content" class="form-control border-0" id="content" rows="2" placeholder="Quoi de neuf aujourd'hui ?" required></b-form-textarea>
+                                            <b-form-textarea name="content" type="text" v-model="content" class="form-control border-0" id="content" rows="2" placeholder="Quoi de neuf aujourd'hui ?"></b-form-textarea>
+                                            <b-img-lazy v-if="uploadUrl" :src="uploadUrl" fluid></b-img-lazy>
+                                            <span class="text-center text-white font-weight-bold">{{ image.name }}</span>
                                             <div class="error" v-if="!$v.content.maxLength">Max. {{ $v.content.$params.maxLength.max }} letters</div>
                                         </div>
                                         <div class="form-group mt-3">
                                             <label id="imageLabel" for="image" class="btn btn-primary border-white text-white font-weight-bold mt-2">Ajouter une image</label>
                                             <input type="file" name="image" id="image" ref="image" v-on:change="handleFileUpload()"/>
-                                            <button class="btn btn-light font-weight-bold ml-3">Envoyer</button>
+                                            <button class="btn btn-light font-weight-bold ml-3" type="submit">Envoyer</button>
                                         </div>
                                     </form>
                                 </div>
@@ -31,11 +33,12 @@
                 </div>
             </div>
             <b-alert v-if="errorAlert" show dismissible variant="danger">Une erreur est survenue</b-alert>
+            <b-alert v-if="blankPost" show dismissible variant="danger">C'est vide là, non ?</b-alert>
         </div>
 </template>
 
 <script>
-import {required, maxLength,} from "vuelidate/lib/validators";
+import {maxLength,} from "vuelidate/lib/validators";
 import axios from "axios";
 
 export default {
@@ -46,13 +49,15 @@ export default {
             pseudo: localStorage.getItem("pseudo"),
             content: "",
             image: "",
+            uploadUrl: "",
             postId:"",
-            erroAlert: false
+            errorAlert: false,
+            blankPost: false
         }
     },
     validations: {
         content: {
-            required, maxLength: maxLength(140)
+            maxLength: maxLength(140)
         }
     },
 
@@ -60,32 +65,35 @@ export default {
 
             handleFileUpload(){
                 this.image = this.$refs.image.files[0];
+                this.uploadUrl = URL.createObjectURL(this.image) // create an url to preview it before uploading
+
             },
             createPost() {
+                this.blankPost = false;
+
+                if (this.content || this.image){
                 this.$v.$touch();
                 const formData = new FormData();
-                if (this.image !== null) {
-                    formData.append("image", this.image);
-                    formData.append("content", this.content);
-                    formData.append("userId", parseInt(localStorage.getItem('userId')));
-                } else if(this.content !== null){
-                    formData.append("content", this.content);
-                    formData.append("userId", parseInt(localStorage.getItem('userId')));
-                }
+                formData.append("image", this.image);
+                formData.append("content", this.content);
+                formData.append("userId", parseInt(localStorage.getItem('userId')));
 
-            axios.post('http://localhost:3000/api/post/new', formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                    "Authorization": 'Bearer ' + localStorage.getItem('token')
-                }
-            })
-            .then(() => {
-                this.$router.push('/allpost');
-            })
-            .catch(() => {
-                this.erroAlert = true
-                console.log(formData);
-            });
+                axios.post('http://localhost:3000/api/post/new', formData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        "Authorization": 'Bearer ' + localStorage.getItem('token')
+                    }
+                })
+                .then(() => {
+                    this.$router.push('/allpost');
+                })
+                .catch(() => {
+                    this.errorAlert = true
+                    console.log(formData);
+                })
+            } else {
+                this.blankPost = true
+            }
         },
     }
 }

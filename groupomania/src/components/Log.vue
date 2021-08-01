@@ -80,6 +80,8 @@ methods:{
     },
 
     login() {
+        this.errorAlert = false; // reboot alert before each try
+
     axios.post( 'http://localhost:3000/api/users/login', {
         email: this.email,
         password: this.password,

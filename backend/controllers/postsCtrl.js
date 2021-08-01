@@ -10,14 +10,9 @@ const ITEMS_LIMIT = 50;
 
 // ----------  CREATE  ----------  //
 exports.createPost = (req, res, next) => {
-    // Params
-    const content = req.body.content;
-    // Checks if there is a file and define its address or leave it blank
-    const imageUrl = req.body.content && req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
 
-    if (content == null) {
-        return res.status(400).json({ 'error': 'missing body' });
-    }
+    // Checks if there is a file and define its address or leave it blank
+    const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
 
     asyncLib.waterfall([
 
@@ -38,7 +33,7 @@ exports.createPost = (req, res, next) => {
         function(userFound, done) {
             if (userFound) {
                 Post.create({
-                        content: content,
+                        content: req.body.content,
                         imageUrl: imageUrl,
                         UserId: userFound.id
                     })

@@ -32,6 +32,7 @@
 
 <img src="https://logos-download.com/wp-content/uploads/2016/09/Node_logo_NodeJS.png" width="80" alt="Node.js logo"> Sur le dossier backend avec un autre terminal:</br>
 -> <code>npm install</code></br>
+-> <strong>Vous devez créer un dossier <em>images</em> dans le dossier <em>backend</em></strong></br>
 -> <code>nodemon server</code></br>
 
 

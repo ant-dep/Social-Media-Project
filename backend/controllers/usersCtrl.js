@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const db = require("../models/index");
 const User = db.user;
+require('dotenv').config();
 
 const asyncLib = require('async');
 
@@ -147,8 +148,8 @@ exports.login = (req, res, next) => {
                 // creates a token with the jwt method sign
                 token: jwt.sign({ userId: userFound.id },
                     // must be a long non specific and random characters
-                    'RANDOM_TOKEN_SECRET',
-                    // make the token expires after 24h
+                    process.env.DB_TOKEN,
+                    // make the token expires after 8h
                     { expiresIn: '8h' }
                 ),
                 isAdmin: userFound.isAdmin
@@ -300,7 +301,7 @@ exports.update = async(req, res, next) => {
 exports.delete = (req, res, next) => {
 
     // Soft-deletion modifying the post the ad a timestamp to deletedAt
-    Post
+    User
         .destroy({
             where: {
                 id: req.params.id
