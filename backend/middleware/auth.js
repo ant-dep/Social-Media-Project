@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-// link to app.js
 module.exports = (req, res, next) => {
     try {
         // Check the 2 second items (token) in the authorization part within headers of the request
@@ -15,8 +14,11 @@ module.exports = (req, res, next) => {
             throw 'ID utilisateur non valide!';
         } else {
             // if it's the same then keep going -> just a middleware
+
             req.token = token;
             req.body.userId = userId;
+            /* Replace any userId given by the one decrypted in the token
+             * The only authentificated userId that counts is within the token */
 
             next();
         }

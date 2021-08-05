@@ -87,7 +87,17 @@
                 <div class="row">
                     <div class="col-8 mx-auto my-5">
                         <b-link v-if="this.user.isAdmin == 1" class="delete badge badge-light font-weight-bold py-1 mr-2" to="AllProfiles"><small>Consulter les profiles</small></b-link>
-                        <b-link class="delete badge badge-light font-weight-bold py-1 " @click.prevent="deleteUser"><small>Supprimer mon compte</small></b-link>
+                        <b-buton v-b-modal.modal-center class="delete badge badge-light font-weight-bold py-1 "><small>Supprimer mon compte</small></b-buton>
+                            <!-- Custom Modal popup to confirm delete -->
+                            <b-modal id="modal-center" centered content-class="shadow" title="confirmation modal" header-bg-variant="danger">
+                                <p class="my-2">Êtes-vous sûr de vouloir <strong>supprimer</strong> votre compte ?</p>
+                                <template #modal-footer="{ cancel }">
+                                    <b-button size="sm" @click="cancel()">
+                                        Cancel
+                                    </b-button>
+                                    <b-button size="sm" variant="danger" @click.prevent="deleteUser">Confirmer</b-button>
+                                </template>
+                            </b-modal>
                     </div>
                 </div>
             </div>
@@ -230,13 +240,11 @@ export default {
                         formData.append("userId",this.userId);
                         formData.append("pseudo", this.pseudo);
                         formData.append("email", this.email);
-                        formData.append("password", this.password);
                 // if not :
                 } else {
                         formData.append("userId", this.userId);
                         formData.append("pseudo", this.pseudo);
                         formData.append("email", this.email);
-                        formData.append("password", this.password);
                     }
 
                 axios

@@ -66,7 +66,7 @@ export default {
     },
 
 
-    async created() {
+    async beforeCreate() {
         await axios
                 .get('http://localhost:3000/api/users', {
                     headers: {
@@ -80,6 +80,7 @@ export default {
                 })
                 .catch(e => {
                     console.log(e + "User inconnu ou Users indisponibles");
+                    this.$router.push('/allpost')
                 })
     },
 

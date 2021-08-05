@@ -12,7 +12,7 @@
                                     <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
                                 </svg>
                             </span>
-                            <input id="pseudo" name="pseudo" type="text" class="col-7 col-lg-6 form-control form-control-sm" v-model.trim="$v.pseudo.$model">
+                            <input id="pseudo" name="pseudo" type="text" class="col-7 col-lg-6 form-control form-control-sm" v-model.trim="$v.pseudo.$model" required>
                         </div>
                         <span class="badge badge-danger" v-if="!$v.pseudo.minLength">{{$v.pseudo.$params.minLength.min}} caractères min !</span>
                     </div>
@@ -26,7 +26,7 @@
                                     <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555zM0 4.697v7.104l5.803-3.558L0 4.697zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757zm3.436-.586L16 11.801V4.697l-5.803 3.546z"/>
                                 </svg>
                             </span>
-                            <input id="email" name="email" type="email" class="col-7 col-lg-6 form-control form-control-sm" v-model.trim="$v.email.$model">
+                            <input id="email" name="email" type="email" class="col-7 col-lg-6 form-control form-control-sm" v-model.trim="$v.email.$model" required>
                         </div>
                     </div>
                 </div>
@@ -40,7 +40,7 @@
                                     <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm-2 6v1.076c.54.166 1 .597 1 1.224v2.4c0 .816-.781 1.3-1.5 1.3h-3c-.719 0-1.5-.484-1.5-1.3V8.3c0-.627.46-1.058 1-1.224V6a2 2 0 1 1 4 0z"/>
                                 </svg>
                             </span>
-                            <input id="password" name="password" type="password" class="col-7 col-lg-6 form-control form-control-sm" v-model.trim="$v.password.$model">
+                            <input id="password" name="password" type="password" class="col-7 col-lg-6 form-control form-control-sm" v-model.trim="$v.password.$model" required>
                         </div>
                         <span class="badge badge-danger" v-if="!$v.password.minLength">{{$v.password.$params.minLength.min}} caractères min !.</span>
                     </div>
@@ -55,7 +55,7 @@
                                     <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm-2 6v1.076c.54.166 1 .597 1 1.224v2.4c0 .816-.781 1.3-1.5 1.3h-3c-.719 0-1.5-.484-1.5-1.3V8.3c0-.627.46-1.058 1-1.224V6a2 2 0 1 1 4 0z"/>
                                 </svg>
                             </span>
-                            <input id="confirmPassword" name="confirmPassword" type="password" class="col-7 col-lg-6 form-control form-control-sm" v-model.trim="$v.confirmPassword.$model">
+                            <input id="confirmPassword" name="confirmPassword" type="password" class="col-7 col-lg-6 form-control form-control-sm" v-model.trim="$v.confirmPassword.$model" required>
                         </div>
                     </div>
                 </div>
@@ -126,34 +126,34 @@ export default {
             this.blankFields = false
             this.differentConfirmPassword = false
             this.alert = [0]; // reboot alerts before each try
+            this.$v.$touch() // checks for errors
 
-            if (this.email == null && this.password == null && this.pseudo == null && this.confirmPassword == null){
+            if (!this.email || !this.password || !this.pseudo || !this.confirmPassword){
                 this.blankFields = true
             } else {
 
-            if(this.password == this.confirmPassword) {
-            this.$v.$touch() // checks for errors
-            this.submited = true
-                axios
-                    .post( 'http://localhost:3000/api/users/signup', {
-                        pseudo: this.pseudo,
-                        email: this.email,
-                        password: this.password,
-                    })
-                    .then(() => {
-                        alert('Compte créé avec succès')
-                        localStorage.setItem('pseudo', this.pseudo)
-                        this.$router.push('Login')
-                    })
-                    .catch((error) => {
-                        if(error.response){
-                            this.alert = error.response.status;
-                        }
-                    })
+                if(this.password == this.confirmPassword) {
+                this.submited = true
+                    axios
+                        .post( 'http://localhost:3000/api/users/signup', {
+                            pseudo: this.pseudo,
+                            email: this.email,
+                            password: this.password,
+                        })
+                        .then(() => {
+                            alert('Compte créé avec succès')
+                            localStorage.setItem('pseudo', this.pseudo)
+                            this.$router.push('Login')
+                        })
+                        .catch((error) => {
+                            if(error.response){
+                                this.alert = error.response.status;
+                            }
+                        })
 
-            } else {
-                this.differentConfirmPassword = true
-            }
+                } else {
+                    this.differentConfirmPassword = true
+                }
             }
         }
     }

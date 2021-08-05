@@ -66,23 +66,63 @@ exports.getAllComments = (req, res, next) => {
                 }]
             })
             .then((comment => res.status(200).json(comment)))
-            .catch(error => res.status(400).json({ error: "Erreur lors de l'affichage des commentaires" }));
+            .catch(() => res.status(400).json({ error: "Erreur lors de l'affichage des commentaires" }));
     },
 
 
     // ----------  DELETE  ----------  //
     exports.deleteComment = (req, res, next) => {
 
-        Comment.findOne({
-                where: {
-                    id: req.params.id
+        asyncLib.waterfall([
+
+                // Checks if the request is sent from an registered user
+                function(done) {
+                    User.findOne({
+                            where: { id: req.body.userId }
+                        }).then(function(userFound) {
+                            done(null, userFound);
+                        })
+                        .catch(function(err) {
+                            return res.status(500).json({ 'error': 'unable to verify user' });
+                        });
+                },
+
+                // Get the targeted comment infos
+                function(userFound, done) {
+                    Comment.findOne({
+                            where: { id: req.params.id }
+                        })
+                        .then(function(commentFound) {
+                            done(null, userFound, commentFound);
+                        })
+                        .catch(function(err) {
+                            return res.status(500).json({ 'error': 'Comment not found' });
+                        });
+                },
+
+                function(userFound, commentFound, done) {
+
+                    // Checks if the user is the owner of the targeted one
+                    if (userFound.id == commentFound.userId || userFound.isAdmin == true) { // or if he's admin
+
+                        // Soft-deletion modifying the post the ad a timestamp to deletedAt
+                        Comment.destroy({
+                                where: { id: req.params.id }
+                            })
+                            .then(() => res.status(200).json({ message: 'Comment supprimé !' }))
+                            .catch(error => res.status(400).json({ error }));
+
+                    } else {
+                        res.status(401).json({ 'error': 'user not allowed' });
+                    }
+                },
+            ],
+
+            function(userFound) {
+                if (userFound) {
+                    return res.status(201).json({ 'message': 'post deleted' });
+                } else {
+                    return res.status(500).json({ 'error': 'cannot delete post' });
                 }
-            }).then(comment => {
-                if (comment) {
-                    Comment.destroy({ where: { id: req.params.id } })
-                        .then(() => res.status(200).json({ message: 'Comment supprimé !' }))
-                        .catch(error => res.status(400).json({ error }));
-                }
-            })
-            .catch(error => res.status(400).json({ message: "Comment introuvable", error: error }))
+            });
     };

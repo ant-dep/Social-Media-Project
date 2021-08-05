@@ -198,7 +198,7 @@ exports.findAll = (req, res) => {
             },
             // 2. If found, get all users by pseudo and id
             function(userFound, done) {
-                if (userFound) {
+                if (userFound && userFound.isAdmin == 1) {
                     User.findAll({
                             attributes: ['id', 'pseudo', 'email', 'imageUrl', 'isAdmin', 'createdAt']
                         })
@@ -209,7 +209,7 @@ exports.findAll = (req, res) => {
                             res.status(500).json({ "error": "invalid fields" });
                         });
                 } else {
-                    res.status(404).json({ 'error': 'user not found' });
+                    res.status(404).json({ 'error': 'user not allowed' });
                 }
             },
             // 3. if done, confirm it
@@ -240,6 +240,8 @@ exports.update = async(req, res, next) => {
     } else {
 
         asyncLib.waterfall([
+
+                // Checks if the request is sent from an registered user
                 function(done) {
                     User.findOne({
                             where: { id: req.body.userId }
@@ -252,37 +254,46 @@ exports.update = async(req, res, next) => {
                 },
 
                 function(userFound, done) {
-                    if (userFound && password !== null) {
-                        bcrypt.hash(password, 12)
-                            .then(hash => {
-                                userFound.update({
-                                        pseudo: (pseudo ? pseudo : userFound.pseudo),
-                                        email: (email ? email : userFound.email),
-                                        password: hash,
-                                        imageUrl: (imageUrl ? imageUrl : userFound.imageUrl)
-                                    })
-                                    .then(function() {
-                                        done(userFound);
-                                    })
-                                    .catch(function(err) {
-                                        res.status(500).json({ 'error': 'cannot update user' });
-                                    })
-                            })
-                    } else if (userFound && password == null) {
-                        userFound.update({
-                                pseudo: (pseudo ? pseudo : userFound.pseudo),
-                                email: (email ? email : userFound.email),
-                                imageUrl: (imageUrl ? imageUrl : userFound.imageUrl),
-                                password: userFound.password,
-                            })
-                            .then(function() {
-                                done(userFound);
-                            })
-                            .catch(function(err) {
-                                res.status(500).json({ 'error': 'cannot update user' });
-                            })
+
+                    // Checks if the user is the owner of the targeted one
+                    if (userFound.id == req.body.userId) {
+
+                        // If the request got a password
+                        if (password !== "") {
+                            bcrypt.hash(password, 12)
+                                .then(hash => {
+                                    userFound.update({
+                                            pseudo: (pseudo ? pseudo : userFound.pseudo),
+                                            email: (email ? email : userFound.email),
+                                            password: hash,
+                                            imageUrl: (imageUrl ? imageUrl : userFound.imageUrl)
+                                        })
+                                        .then(function() {
+                                            done(userFound);
+                                        })
+                                        .catch(function(err) {
+                                            res.status(500).json({ 'error': 'cannot update user' });
+                                        })
+                                })
+                                // If not
+                        } else if (password == "") {
+                            userFound.update({
+                                    pseudo: (pseudo ? pseudo : userFound.pseudo),
+                                    email: (email ? email : userFound.email),
+                                    imageUrl: (imageUrl ? imageUrl : userFound.imageUrl),
+                                    password: userFound.password,
+                                })
+                                .then(function() {
+                                    done(userFound);
+                                })
+                                .catch(function(err) {
+                                    res.status(500).json({ 'error': 'cannot update user' });
+                                })
+                        } else {
+                            res.status(404).json({ 'error': 'user not found' });
+                        }
                     } else {
-                        res.status(404).json({ 'error': 'user not found' });
+                        res.status(401).json({ 'error': 'user not allowed' });
                     }
                 },
             ],
@@ -300,13 +311,44 @@ exports.update = async(req, res, next) => {
 // ----------  DELETE  ----------  //
 exports.delete = (req, res, next) => {
 
-    // Soft-deletion modifying the post the ad a timestamp to deletedAt
-    User
-        .destroy({
-            where: {
-                id: req.params.id
+    asyncLib.waterfall([
+
+            // Checks if the request is sent from an registered user
+            function(done) {
+                User.findOne({
+                        where: { id: req.body.userId }
+                    }).then(function(userFound) {
+                        done(null, userFound);
+                    })
+                    .catch(function(err) {
+                        return res.status(500).json({ 'error': 'unable to verify user' });
+                    });
+            },
+
+            function(userFound, done) {
+
+                // Checks if the user is the owner of the targeted one
+                if (userFound.id == req.body.userId || userFound.isAdmin == true) { // or if he's admin
+
+                    // Soft-deletion modifying the post the ad a timestamp to deletedAt
+                    User.destroy({
+                            where: { id: req.params.id }
+                        })
+                        .then(() => res.status(200).json({ message: 'Utilisateur supprimé' })) // send confirmation if done
+                        .catch(error => res.status(500).json({ 'error': 'cannot delete user' }))
+
+                } else {
+                    res.status(401).json({ 'error': 'user not allowed' });
+                }
+            },
+        ],
+
+        function(userFound) {
+            if (userFound) {
+                return res.status(201).json({ 'message': 'profile deleted' });
+            } else {
+                return res.status(500).json({ 'error': 'cannot delete profile' });
             }
-        })
-        .then(() => res.status(200).json({ message: 'Utilisateur supprimé' })) // send confirmation if done
-        .catch(error => res.status(500).json({ 'error': 'cannot delete user' }));
+        });
+
 };
